@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 15:59:59
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:43:59
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
@@ -266,56 +266,60 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 15:59:59
 
 
  00000076  8B 75 10			mov		esi,[ebp+16] ;start of number string
+
+
+
  00000079  8B 4D 08			mov		ecx,[ebp+8] ;number of bytes in string
- 0000007C				print:
+ 0000007C				print:	
  0000007C  AC					lodsb	
- 0000007D  3C 39				cmp		al,57
- 0000007F  7F 21				JG		_invalid
 
- 00000081  3C 30				cmp		al,48
- 00000083  7C 1D				JL		_invalid
+ 0000007D  3C 2B				cmp		al,43
+ 0000007F  74 0E				JE		_checkPlus
+
+ 00000081  3C 2D				cmp		al,45
+ 00000083  74 0F				JE		_checkNegative
 						
+ 00000085  3C 39				cmp		al,57
+ 00000087  7F 14				JG		_invalidChar
 
-
- 00000085  E8 00000000 E			call	WriteChar
- 0000008A  B0 20				mov		al," "
- 0000008C  E8 00000000 E			call	WriteChar
-
-
- 00000091  BA 00000257 R			mov		edx,offset valid
- 00000096  E8 00000000 E			call	WriteString
- 0000009B  E8 00000000 E			call	crlf
- 000000A0  EB 1B				JMP		_continue
-
+ 00000089  3C 30				cmp		al,48
+ 0000008B  7C 10				JL		_invalidChar
 						
- 000000A2					_invalid:
+ 0000008D  EB 0A				JMP		_continue
 						
- 000000A2  E8 00000000 E			call	WriteChar
- 000000A7  B0 20				mov		al," "
- 000000A9  E8 00000000 E			call	WriteChar
+ 0000008F					_checkPlus:
+ 0000008F  3B 4D 08					cmp		ecx,[ebp+8]
+ 00000092  75 09					JNE		_invalidChar
+						
+ 00000094					_checkNegative:
+ 00000094  3B 4D 08					cmp		ecx,[ebp+8]
+ 00000097  75 04					JNE		_invalidChar
 
- 000000AE  BA 0000024F R			mov		edx,offset invalid
- 000000B3  E8 00000000 E			call	WriteString
- 000000B8  E8 00000000 E			call	crlf
+ 00000099					_continue:
+ 00000099  E2 E1				LOOP print
+ 0000009B  EB 0C				JMP		_allValidChars ;all characters checked, nothing disallowed 
 
-							
- 000000BD					_continue:
- 000000BD  E2 BD				LOOP print
+ 0000009D				_invalidChar:
+ 0000009D  BA 0000024F R			mov		edx,offset invalid
+ 000000A2  E8 00000000 E			call	WriteString
+ 000000A7  EB 0A				JMP		_end
+ 000000A9				_allValidChars:
+ 000000A9  BA 00000257 R			mov		edx,offset valid 
+ 000000AE  E8 00000000 E			call	WriteString
 
 
+ 000000B3				_end:
+ 000000B3  5D				pop ebp
+ 000000B4  C2 0010			RET		16
+ 000000B7			ReadVal	 ENDP
 
- 000000BF				_end:
- 000000BF  5D				pop ebp
- 000000C0  C2 0010			RET		16
- 000000C3			ReadVal	 ENDP
+ 000000B7			WriteVal PROC	
 
- 000000C3			WriteVal PROC	
-
- 000000C3  C3			RET
- 000000C4			WriteVal ENDP
+ 000000B7  C3			RET
+ 000000B8			WriteVal ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 15:59:59
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:43:59
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -418,7 +422,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000025D Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000C4 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000B8 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -488,11 +492,14 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ReadVal  . . . . . . . . . . . .	P Near	 00000050 _TEXT	Length= 00000073 Public STDCALL
+ReadVal  . . . . . . . . . . . .	P Near	 00000050 _TEXT	Length= 00000067 Public STDCALL
   print  . . . . . . . . . . . .	L Near	 0000007C _TEXT	
-  _invalid . . . . . . . . . . .	L Near	 000000A2 _TEXT	
-  _continue  . . . . . . . . . .	L Near	 000000BD _TEXT	
-  _end . . . . . . . . . . . . .	L Near	 000000BF _TEXT	
+  _checkPlus . . . . . . . . . .	L Near	 0000008F _TEXT	
+  _checkNegative . . . . . . . .	L Near	 00000094 _TEXT	
+  _continue  . . . . . . . . . .	L Near	 00000099 _TEXT	
+  _invalidChar . . . . . . . . .	L Near	 0000009D _TEXT	
+  _allValidChars . . . . . . . .	L Near	 000000A9 _TEXT	
+  _end . . . . . . . . . . . . .	L Near	 000000B3 _TEXT	
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -529,7 +536,7 @@ WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-WriteVal . . . . . . . . . . . .	P Near	 000000C3 _TEXT	Length= 00000001 Public STDCALL
+WriteVal . . . . . . . . . . . .	P Near	 000000B7 _TEXT	Length= 00000001 Public STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000050 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C

@@ -106,42 +106,44 @@ ReadVal	 PROC
 
 
 	mov		esi,[ebp+16] ;start of number string
+
 	mov		ecx,[ebp+8] ;number of bytes in string
-	print:
+	print:	
 		lodsb	
+
+		cmp		al,43
+		JE		_checkPlus
+
+		cmp		al,45
+		JE		_checkNegative
+		
 		cmp		al,57
-		JG		_invalid
+		JG		_invalidChar
 
 		cmp		al,48
-		JL		_invalid
+		JL		_invalidChar
 		
-
-
-		call	WriteChar
-		mov		al," "
-		call	WriteChar
-
-
-		mov		edx,offset valid
-		call	WriteString
-		call	crlf
 		JMP		_continue
-
 		
-		_invalid:
+		_checkPlus:
+			cmp		ecx,[ebp+8]
+			JNE		_invalidChar
 		
-		call	WriteChar
-		mov		al," "
-		call	WriteChar
+		_checkNegative:
+			cmp		ecx,[ebp+8]
+			JNE		_invalidChar
 
-		mov		edx,offset invalid
-		call	WriteString
-		call	crlf
-
-			
 		_continue:
 		LOOP print
+		JMP		_allValidChars ;all characters checked, nothing disallowed 
 
+	_invalidChar:
+		mov		edx,offset invalid
+		call	WriteString
+		JMP		_end
+	_allValidChars:
+		mov		edx,offset valid 
+		call	WriteString
 
 
 	_end:
