@@ -80,6 +80,8 @@ main PROC
 	mDisplayString offset intro2
 	mDisplayString offset intro3
 	
+
+	push	offset	rePrompt
 	push	offset	promptUser
 	push	offset	BUFFER
 	push	sizeof	BUFFER
@@ -100,15 +102,12 @@ ReadVal	 PROC
 		
 	;			+20	       +16			+12			 +8
 	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
-
 	mGetString [ebp+20],[ebp+16],[ebp+12],[ebp+8]
 
 
-
 	mov		esi,[ebp+16] ;start of number string
-
 	mov		ecx,[ebp+8] ;number of bytes in string
-	print:	
+	verifyChars:	
 		lodsb	
 
 		cmp		al,43
@@ -134,7 +133,7 @@ ReadVal	 PROC
 			JNE		_invalidChar
 
 		_continue:
-		LOOP print
+		LOOP verifyChars
 		JMP		_allValidChars ;all characters checked, nothing disallowed 
 
 	_invalidChar:
@@ -144,7 +143,6 @@ ReadVal	 PROC
 	_allValidChars:
 		mov		edx,offset valid 
 		call	WriteString
-
 
 	_end:
 	pop ebp

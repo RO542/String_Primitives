@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:43:59
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:52:17
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
@@ -223,103 +223,102 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:43:59
  0000002D  E8 00000000 E     1		call	crlf
  00000032  5A		     1		pop		edx
 					
- 00000033  68 0000015F R		push	offset	promptUser
- 00000038  68 00000028 R		push	offset	BUFFER
- 0000003D  6A 0C			push	sizeof	BUFFER
- 0000003F  68 00000034 R		push	offset	byteCount
- 00000044  E8 00000007			call	ReadVal
+
+ 00000033  68 0000017A R		push	offset	rePrompt
+ 00000038  68 0000015F R		push	offset	promptUser
+ 0000003D  68 00000028 R		push	offset	BUFFER
+ 00000042  6A 0C			push	sizeof	BUFFER
+ 00000044  68 00000034 R		push	offset	byteCount
+ 00000049  E8 00000007			call	ReadVal
 					
 
 
 
 					Invoke ExitProcess,0	; exit to operating system
- 00000049  6A 00	   *	    push   +000000000h
- 0000004B  E8 00000000 E   *	    call   ExitProcess
- 00000050			main ENDP
+ 0000004E  6A 00	   *	    push   +000000000h
+ 00000050  E8 00000000 E   *	    call   ExitProcess
+ 00000055			main ENDP
 
 				; (insert additional procedures here)
 
- 00000050			ReadVal	 PROC
- 00000050  55				push	ebp
- 00000051  8B EC			mov		ebp,esp
+ 00000055			ReadVal	 PROC
+ 00000055  55				push	ebp
+ 00000056  8B EC			mov		ebp,esp
 						
 					;			+20	       +16			+12			 +8
 					;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
-
 					mGetString [ebp+20],[ebp+16],[ebp+12],[ebp+8]
- 00000053  52		     1		push	edx
- 00000054  51		     1		push	ecx
- 00000055  50		     1		push	eax
- 00000056  52		     2		push	edx
- 00000057  8B 55 14	     2		mov		edx,[ebp+20]
- 0000005A  E8 00000000 E     2		call	WriteString
- 0000005F  E8 00000000 E     2		call	crlf
- 00000064  5A		     2		pop		edx
- 00000065  8B 55 10	     1		mov		edx, [ebp+16]
- 00000068  8B 4D 0C	     1		mov		ecx, [ebp+12]
- 0000006B  E8 00000000 E     1		call	ReadString
- 00000070  89 45 08	     1		mov		[[ebp+8]],eax ; sending back the number of bytes entered 
- 00000073  58		     1		pop eax
- 00000074  59		     1		pop ecx
- 00000075  5A		     1		pop	edx
+ 00000058  52		     1		push	edx
+ 00000059  51		     1		push	ecx
+ 0000005A  50		     1		push	eax
+ 0000005B  52		     2		push	edx
+ 0000005C  8B 55 14	     2		mov		edx,[ebp+20]
+ 0000005F  E8 00000000 E     2		call	WriteString
+ 00000064  E8 00000000 E     2		call	crlf
+ 00000069  5A		     2		pop		edx
+ 0000006A  8B 55 10	     1		mov		edx, [ebp+16]
+ 0000006D  8B 4D 0C	     1		mov		ecx, [ebp+12]
+ 00000070  E8 00000000 E     1		call	ReadString
+ 00000075  89 45 08	     1		mov		[[ebp+8]],eax ; sending back the number of bytes entered 
+ 00000078  58		     1		pop eax
+ 00000079  59		     1		pop ecx
+ 0000007A  5A		     1		pop	edx
 
 
+ 0000007B  8B 75 10			mov		esi,[ebp+16] ;start of number string
+ 0000007E  8B 4D 08			mov		ecx,[ebp+8] ;number of bytes in string
+ 00000081				print:	
+ 00000081  AC					lodsb	
 
- 00000076  8B 75 10			mov		esi,[ebp+16] ;start of number string
+ 00000082  3C 2B				cmp		al,43
+ 00000084  74 0E				JE		_checkPlus
 
-
-
- 00000079  8B 4D 08			mov		ecx,[ebp+8] ;number of bytes in string
- 0000007C				print:	
- 0000007C  AC					lodsb	
-
- 0000007D  3C 2B				cmp		al,43
- 0000007F  74 0E				JE		_checkPlus
-
- 00000081  3C 2D				cmp		al,45
- 00000083  74 0F				JE		_checkNegative
+ 00000086  3C 2D				cmp		al,45
+ 00000088  74 0F				JE		_checkNegative
 						
- 00000085  3C 39				cmp		al,57
- 00000087  7F 14				JG		_invalidChar
+ 0000008A  3C 39				cmp		al,57
+ 0000008C  7F 14				JG		_invalidChar
 
- 00000089  3C 30				cmp		al,48
- 0000008B  7C 10				JL		_invalidChar
+ 0000008E  3C 30				cmp		al,48
+ 00000090  7C 10				JL		_invalidChar
 						
- 0000008D  EB 0A				JMP		_continue
+ 00000092  EB 0A				JMP		_continue
 						
- 0000008F					_checkPlus:
- 0000008F  3B 4D 08					cmp		ecx,[ebp+8]
- 00000092  75 09					JNE		_invalidChar
-						
- 00000094					_checkNegative:
+ 00000094					_checkPlus:
  00000094  3B 4D 08					cmp		ecx,[ebp+8]
- 00000097  75 04					JNE		_invalidChar
+ 00000097  75 09					JNE		_invalidChar
+						
+ 00000099					_checkNegative:
+ 00000099  3B 4D 08					cmp		ecx,[ebp+8]
+ 0000009C  75 04					JNE		_invalidChar
 
- 00000099					_continue:
- 00000099  E2 E1				LOOP print
- 0000009B  EB 0C				JMP		_allValidChars ;all characters checked, nothing disallowed 
+ 0000009E					_continue:
+ 0000009E  E2 E1				LOOP print
+ 000000A0  EB 0C				JMP		_allValidChars ;all characters checked, nothing disallowed 
 
- 0000009D				_invalidChar:
- 0000009D  BA 0000024F R			mov		edx,offset invalid
- 000000A2  E8 00000000 E			call	WriteString
- 000000A7  EB 0A				JMP		_end
- 000000A9				_allValidChars:
- 000000A9  BA 00000257 R			mov		edx,offset valid 
- 000000AE  E8 00000000 E			call	WriteString
+ 000000A2				_invalidChar:
+ 000000A2  BA 0000024F R			mov		edx,offset invalid
+ 000000A7  E8 00000000 E			call	WriteString
+ 000000AC  EB 17				JMP		_end
+ 000000AE				_allValidChars:
+ 000000AE  BA 00000257 R			mov		edx,offset valid 
+ 000000B3  E8 00000000 E			call	WriteString
 
+ 000000B8  E8 00000000 E		call	crlf
+ 000000BD  8B 55 18			mov		edx,[ebp+24]
+ 000000C0  E8 00000000 E		call	WriteString
+ 000000C5				_end:
+ 000000C5  5D				pop ebp
+ 000000C6  C2 0010			RET		16
+ 000000C9			ReadVal	 ENDP
 
- 000000B3				_end:
- 000000B3  5D				pop ebp
- 000000B4  C2 0010			RET		16
- 000000B7			ReadVal	 ENDP
+ 000000C9			WriteVal PROC	
 
- 000000B7			WriteVal PROC	
-
- 000000B7  C3			RET
- 000000B8			WriteVal ENDP
+ 000000C9  C3			RET
+ 000000CA			WriteVal ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:43:59
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/15/23 16:52:17
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -422,7 +421,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000025D Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000B8 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000CA Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -492,14 +491,14 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ReadVal  . . . . . . . . . . . .	P Near	 00000050 _TEXT	Length= 00000067 Public STDCALL
-  print  . . . . . . . . . . . .	L Near	 0000007C _TEXT	
-  _checkPlus . . . . . . . . . .	L Near	 0000008F _TEXT	
-  _checkNegative . . . . . . . .	L Near	 00000094 _TEXT	
-  _continue  . . . . . . . . . .	L Near	 00000099 _TEXT	
-  _invalidChar . . . . . . . . .	L Near	 0000009D _TEXT	
-  _allValidChars . . . . . . . .	L Near	 000000A9 _TEXT	
-  _end . . . . . . . . . . . . .	L Near	 000000B3 _TEXT	
+ReadVal  . . . . . . . . . . . .	P Near	 00000055 _TEXT	Length= 00000074 Public STDCALL
+  print  . . . . . . . . . . . .	L Near	 00000081 _TEXT	
+  _checkPlus . . . . . . . . . .	L Near	 00000094 _TEXT	
+  _checkNegative . . . . . . . .	L Near	 00000099 _TEXT	
+  _continue  . . . . . . . . . .	L Near	 0000009E _TEXT	
+  _invalidChar . . . . . . . . .	L Near	 000000A2 _TEXT	
+  _allValidChars . . . . . . . .	L Near	 000000AE _TEXT	
+  _end . . . . . . . . . . . . .	L Near	 000000C5 _TEXT	
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -536,9 +535,9 @@ WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-WriteVal . . . . . . . . . . . .	P Near	 000000B7 _TEXT	Length= 00000001 Public STDCALL
+WriteVal . . . . . . . . . . . .	P Near	 000000C9 _TEXT	Length= 00000001 Public STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000050 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000055 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
