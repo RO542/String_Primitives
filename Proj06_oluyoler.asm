@@ -75,7 +75,7 @@ goodbye		BYTE "Thanks for using the program,bye now.",0
 
 invalid		byte "invalid",0
 valid		byte "valid",0
-testNum		byte "2147483647",0
+testNum		byte "0",0
 
 .code
 main PROC
@@ -91,10 +91,24 @@ main PROC
 	;push	sizeof	BUFFER
 	;push	offset	byteCount
 	;call	ReadVal
-	
-		
-	mov		esi,offset testNum
-	mov		ecx,sizeof testNum
+
+
+		push	offset	testNum
+		push	sizeof	testNum
+		call	StringtoInt
+
+		Invoke ExitProcess,0	; exit to operating system
+main ENDP
+
+; (insert additional procedures here)
+
+
+StringtoInt	PROC
+	push	ebp
+	mov		ebp,esp
+
+	mov		esi,[ebp+12]
+	mov		ecx,[ebp+8]
 	dec		ecx
 	mov		eax,0
 	CLD
@@ -117,11 +131,9 @@ main PROC
 		LOOP conv
 		_break:
 		call	WriteInt
-		Invoke ExitProcess,0	; exit to operating system
-main ENDP
 
-; (insert additional procedures here)
-
+RET		8
+StringtoInt	ENDP
 ReadVal	 PROC
 	push	ebp
 	mov		ebp,esp
