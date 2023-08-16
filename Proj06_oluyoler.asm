@@ -114,7 +114,8 @@ ReadVal	 PROC
 	mov		ecx,[ebp+8] ;number of bytes
 
 	mov		eax,0
-	mov		ebx,0
+;	mov		ebx,0
+	mov		edi,0
 
 	verifyChars:	
 		lodsb	
@@ -135,12 +136,14 @@ ReadVal	 PROC
 		_checkPlus:
 			cmp		ecx,[ebp+8]; check if this is the first iteration
 			JNE		_invalidChar
-			mov		ebx,1
+;			mov		ebx,1
+			mov		edi,1
 			JMP		_continue
 		_checkNegative:
 			cmp		ecx,[ebp+8]
 			JNE		_invalidChar
-			mov		ebx,2 ; using 2 because -1 fails 
+	;		mov		ebx,2 ; using 2 because -1 fails 
+			mov		edi,2
 			JMP		_continue
 		_continue:
 		LOOP	 verifyChars
@@ -157,13 +160,13 @@ ReadVal	 PROC
 		mov		ecx,[ebp+8] ;number of bytes
 
 
-		push	ebx
+;		push	ebx
 
 		mov		eax,0
 
-		cmp		ebx,2 
+		cmp		edi,2 
 		JE		_skipFirstChar
-		cmp		ebx,1
+		cmp		edi,1
 		JE		_skipFirstChar
 		JMP		conv
 		
@@ -176,7 +179,7 @@ ReadVal	 PROC
 		conv:
 			mov		ebx,10
 			imul	ebx
-		;	jo		 ;;;;;;;;;;;;
+			jo		_subsequentPrompt
 
 			push	eax ; save old remainder times 10
 			xor		eax,eax
@@ -186,19 +189,28 @@ ReadVal	 PROC
 			mov		ebx,eax
 
 			pop		eax
+
+			cmp		edi,2
+			JE		_subtract
 			add		eax,ebx
-		;;;;;;;;;;;;;;;detect overflows here
+			JMP		_check
+			_subtract:
+			sub		eax,ebx
+
+			_check:
+			jo		_subsequentPrompt
 
 			LOOP conv
 
-	pop		ebx
-	cmp		ebx,2
-	JE		_negate
-	JMP		_return
+;	pop		ebx
+	;cmp		ebx,2
+	;JE		_negate
+	;JMP		_return
 
 	_negate:
-	neg		eax
-	
+	;neg		eax
+	;cmp		eax,MIN_SDWORD
+	;JL		_subsequentPrompt
 	_return:
 	call	WriteInt
 	;;;;;;;

@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 06:33:47
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
@@ -282,7 +282,8 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 06:33:47
  000000A4  8B 4D 08			mov		ecx,[ebp+8] ;number of bytes
 
  000000A7  B8 00000000			mov		eax,0
- 000000AC  BB 00000000			mov		ebx,0
+				;	mov		ebx,0
+ 000000AC  BF 00000000			mov		edi,0
 
  000000B1				verifyChars:	
  000000B1  AC					lodsb	
@@ -303,12 +304,14 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 06:33:47
  000000C4					_checkPlus:
  000000C4  3B 4D 08					cmp		ecx,[ebp+8]; check if this is the first iteration
  000000C7  75 17					JNE		_invalidChar
- 000000C9  BB 00000001					mov		ebx,1
+				;			mov		ebx,1
+ 000000C9  BF 00000001					mov		edi,1
  000000CE  EB 0C					JMP		_continue
  000000D0					_checkNegative:
  000000D0  3B 4D 08					cmp		ecx,[ebp+8]
  000000D3  75 0B					JNE		_invalidChar
- 000000D5  BB 00000002					mov		ebx,2 ; using 2 because -1 fails 
+					;		mov		ebx,2 ; using 2 because -1 fails 
+ 000000D5  BF 00000002					mov		edi,2
  000000DA  EB 00					JMP		_continue
  000000DC					_continue:
  000000DC  E2 D3				LOOP	 verifyChars
@@ -325,64 +328,71 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 06:33:47
  000000E5  8B 4D 08				mov		ecx,[ebp+8] ;number of bytes
 
 
-				;		mov		eax,ebx
-						;call	WriteInt
- 000000E8  53					push	ebx
+				;		push	ebx
 
- 000000E9  B8 00000000				mov		eax,0
+ 000000E8  B8 00000000				mov		eax,0
 
- 000000EE  83 FB 02				cmp		ebx,2 
- 000000F1  74 07				JE		_skipFirstChar
- 000000F3  83 FB 01				cmp		ebx,1
- 000000F6  74 02				JE		_skipFirstChar
- 000000F8  EB 03				JMP		conv
+ 000000ED  83 FF 02				cmp		edi,2 
+ 000000F0  74 07				JE		_skipFirstChar
+ 000000F2  83 FF 01				cmp		edi,1
+ 000000F5  74 02				JE		_skipFirstChar
+ 000000F7  EB 03				JMP		conv
 						
 						
- 000000FA					_skipFirstChar:
- 000000FA  46					inc		esi
- 000000FB  49					dec		ecx
+ 000000F9					_skipFirstChar:
+ 000000F9  46					inc		esi
+ 000000FA  49					dec		ecx
 						
- 000000FC  FC					CLD
- 000000FD					conv:
- 000000FD  BB 0000000A					mov		ebx,10
- 00000102  F7 EB					imul	ebx
-						;	jo		
+ 000000FB  FC					CLD
+ 000000FC					conv:
+ 000000FC  BB 0000000A					mov		ebx,10
+ 00000101  F7 EB					imul	ebx
+ 00000103  0F 80 FFFFFF75				jo		_subsequentPrompt
 
- 00000104  50						push	eax ; save old remainder times 10
- 00000105  33 C0					xor		eax,eax
- 00000107  AC						lodsb
+ 00000109  50						push	eax ; save old remainder times 10
+ 0000010A  33 C0					xor		eax,eax
+ 0000010C  AC						lodsb
 
- 00000108  83 E8 30					sub		eax,48; ASCII subtraction 
- 0000010B  8B D8					mov		ebx,eax
+ 0000010D  83 E8 30					sub		eax,48; ASCII subtraction 
+ 00000110  8B D8					mov		ebx,eax
 
- 0000010D  58						pop		eax
- 0000010E  03 C3					add		eax,ebx
+ 00000112  58						pop		eax
 
- 00000110  E2 EB					LOOP conv
+ 00000113  83 FF 02					cmp		edi,2
+ 00000116  74 04					JE		_subtract
+ 00000118  03 C3					add		eax,ebx
+ 0000011A  EB 02					JMP		_check
+ 0000011C						_subtract:
+ 0000011C  2B C3					sub		eax,ebx
 
- 00000112  5B				pop		ebx
-				;	mov		eax,ebx
- 00000113  83 FB 02			cmp		ebx,2
- 00000116  74 02			JE		_negate
- 00000118  EB 02			JMP		_return
+ 0000011E						_check:
+ 0000011E  0F 80 FFFFFF5A				jo		_subsequentPrompt
 
- 0000011A				_negate:
- 0000011A  F7 D8			neg		eax
-					
- 0000011C				_return:
- 0000011C  E8 00000000 E		call	WriteInt
+ 00000124  E2 D6					LOOP conv
+
+				;	pop		ebx
+					;cmp		ebx,2
+					;JE		_negate
+					;JMP		_return
+
+ 00000126				_negate:
+					;neg		eax
+					;cmp		eax,MIN_SDWORD
+					;JL		_subsequentPrompt
+ 00000126				_return:
+ 00000126  E8 00000000 E		call	WriteInt
 					;;;;;;;
 					; negate final number here if needed
 					;call	WriteDec ;use WriteDec for testing only (remove later)
- 00000121  59				pop		ecx
- 00000122  5D				pop		ebp
- 00000123  C2 0014			RET		20
- 00000126			ReadVal	 ENDP
+ 0000012B  59				pop		ecx
+ 0000012C  5D				pop		ebp
+ 0000012D  C2 0014			RET		20
+ 00000130			ReadVal	 ENDP
 
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 06:33:47
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -485,7 +495,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 00000235 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000126 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000130 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -555,7 +565,7 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ReadVal  . . . . . . . . . . . .	P Near	 00000055 _TEXT	Length= 000000D1 Public STDCALL
+ReadVal  . . . . . . . . . . . .	P Near	 00000055 _TEXT	Length= 000000DB Public STDCALL
   _firstPrompt . . . . . . . . .	L Near	 00000059 _TEXT	
   _subsequentPrompt  . . . . . .	L Near	 0000007E _TEXT	
   _verify  . . . . . . . . . . .	L Near	 000000A1 _TEXT	
@@ -565,10 +575,12 @@ ReadVal  . . . . . . . . . . . .	P Near	 00000055 _TEXT	Length= 000000D1 Public 
   _continue  . . . . . . . . . .	L Near	 000000DC _TEXT	
   _invalidChar . . . . . . . . .	L Near	 000000E0 _TEXT	
   _allValidChars . . . . . . . .	L Near	 000000E2 _TEXT	
-  _skipFirstChar . . . . . . . .	L Near	 000000FA _TEXT	
-  conv . . . . . . . . . . . . .	L Near	 000000FD _TEXT	
-  _negate  . . . . . . . . . . .	L Near	 0000011A _TEXT	
-  _return  . . . . . . . . . . .	L Near	 0000011C _TEXT	
+  _skipFirstChar . . . . . . . .	L Near	 000000F9 _TEXT	
+  conv . . . . . . . . . . . . .	L Near	 000000FC _TEXT	
+  _subtract  . . . . . . . . . .	L Near	 0000011C _TEXT	
+  _check . . . . . . . . . . . .	L Near	 0000011E _TEXT	
+  _negate  . . . . . . . . . . .	L Near	 00000126 _TEXT	
+  _return  . . . . . . . . . . .	L Near	 00000126 _TEXT	
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
