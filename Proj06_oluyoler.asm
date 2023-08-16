@@ -147,21 +147,29 @@ ReadVal	 PROC
 		JMP		_allValidChars ;entire string is valid
 
 	_invalidChar:
-		JMP		_subsequentPrompt
+		JMP	_subsequentPrompt
 
+		
 	_allValidChars:
 		
 	
 		mov		esi,[ebp+16] ;start of number string
 		mov		ecx,[ebp+8] ;number of bytes
+
+
+;		mov		eax,ebx
+		;call	WriteInt
+		push	ebx
+
 		mov		eax,0
+
 		cmp		ebx,2 
 		JE		_skipFirstChar
 		cmp		ebx,1
 		JE		_skipFirstChar
 		JMP		conv
-			
-
+		
+		
 		_skipFirstChar:
 		inc		esi
 		dec		ecx
@@ -170,6 +178,8 @@ ReadVal	 PROC
 		conv:
 			mov		ebx,10
 			imul	ebx
+		;	jo		
+
 			push	eax ; save old remainder times 10
 			xor		eax,eax
 			lodsb
@@ -182,7 +192,17 @@ ReadVal	 PROC
 
 			LOOP conv
 
-	_finished:
+	pop		ebx
+;	mov		eax,ebx
+	cmp		ebx,2
+	JE		_negate
+	JMP		_return
+
+	_negate:
+	neg		eax
+	
+	_return:
+	call	WriteInt
 	;;;;;;;
 	; negate final number here if needed
 	;call	WriteDec ;use WriteDec for testing only (remove later)
