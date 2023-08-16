@@ -24,6 +24,7 @@ ENDM
 
 
 mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
+
 	push	edx
 	push	ecx
 	push	eax
@@ -75,9 +76,9 @@ goodbye		BYTE "Thanks for using the program,bye now.",0
 .code
 main PROC
 
-	mDisplayString offset intro1
-	mDisplayString offset intro2
-	mDisplayString offset intro3
+;	mDisplayString offset intro1
+;	mDisplayString offset intro2
+;	mDisplayString offset intro3
 	
 
 	mov		ecx,ARRAYSIZE
@@ -90,14 +91,30 @@ main PROC
 		push	sizeof	BUFFER
 		push	offset	byteCount
 		call	ReadVal
+		mov		[edi],ebx
+		add		edi,4
 		add		sum,ebx
 
 		LOOP fillArray
-		mov		edx,offset showSum
-		call	WriteString
+		mov		eax,sum
+
+		xor		eax,eax
+		xor		edx,edx
+		
+		mov		eax,sum
+		mov		ebx,10
+		idiv	ebx
+		mov		average,eax
+
+;		mov		ecx,ARRAYSIZE
+;		p:
+;			mov		eax,[esi]
+;			call	WriteInt
+;			add		esi,4
+;
+;			LOOP p
 		mov		eax,sum
 		call	WriteInt
-
 
 
 	
@@ -140,7 +157,7 @@ ReadVal	 PROC
 		JMP		_verifyLength
 	
 	_subsequentPrompt: ; ebp+24 is the rePrompt
-		mGetString [ebp+24],[ebp+16],[ebp+12],[ebp+8]	
+		mGetString [ebp+24],[ebp+16],[ebp+12],[ebp+8]
 
 	_verifyLength:
 		mov		eax,[ebp+8]
@@ -215,7 +232,7 @@ ReadVal	 PROC
 			imul	ebx ;shift char digit left
 			jo		_subsequentPrompt
 
-			push	eax ; save old remainder times 10
+			push	eax 
 			xor		eax,eax
 			lodsb
 
@@ -223,7 +240,7 @@ ReadVal	 PROC
 			mov		ebx,eax
 			pop		eax
 			
-			;if edi is 2 subtract otherwise add to eax
+			;if edi is 2 subtract from eax otherwise add 
 			cmp		edi,2
 			JE		_subtract
 			add		eax,ebx
@@ -232,8 +249,9 @@ ReadVal	 PROC
 				sub		eax,ebx
 			_checkOverflow:
 				jo		_subsequentPrompt
-
 			LOOP convChars
+
+	;ebx now contains the valid SDWORD for the input string
 	mov		ebx,eax
 
 	pop		edi
