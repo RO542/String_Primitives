@@ -51,7 +51,7 @@ ARRAYSIZE  =  10
 
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
-BUFFER		BYTE	12	DUP(0) ; including sign ? 
+BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
 byteCount	SDWORD   ?
 
 
@@ -93,82 +93,109 @@ main ENDP
 
 
 
-
+; ---------------------------------------------------------------------------------
+; Name: ReadVal
+;
+; Repeatedly takes user input until the user enters a valid SDWORD and converts the
+;	the ASCII characters to an integer.
+;
+; Preconditions: None 
+;	
+; Receives:
+; [ebp+8]  = the prompt passed to mGetString the first time
+; [ebp+12] = the size of the character buffer/string 
+; [ebp+16] = the address of the character buffer/string
+; [ebp+20] = the count of bytes in the chracter buffer
+; [ebp+24] = an alternate prompt when the user enters an invalid string
+;
+; Returns:
+; [ebp+28] = ;;;;;;;;;;;;;;;;;;;;;;;; ? Return address of converted string
+; ---------------------------------------------------------------------------------
 ReadVal	 PROC
 	push	ebp
 	mov		ebp,esp
 	push	ecx
 
-	;			+20	       +16			+12			 +8
+	;				+20	       +16				+12			 +8
 	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
 	_firstPrompt:
 		mGetString [ebp+20],[ebp+16],[ebp+12],[ebp+8]
-		JMP		_verify
+		JMP		_verifyLength
 	
 	_subsequentPrompt: ; ebp+24 is the rePrompt
 		mGetString [ebp+24],[ebp+16],[ebp+12],[ebp+8]	
 
-	_verify:
+	_verifyLength:
+		mov		eax,[ebp+8]
+		cmp		eax,12
+		JG		_subsequentPrompt
 
-	mov		esi,[ebp+16] ;start of number string
-	mov		ecx,[ebp+8] ;number of bytes
+		; preparing to loop over the string
+		mov		esi,[ebp+16] 
+		mov		ecx,[ebp+8] 
 
-	mov		eax,0
-	mov		edi,0
+		;prepare eax to store converted int, and edi to represent the sign
+		mov		eax,0
+		mov		edi,0
 
 	verifyChars:	
 		lodsb	
-
+		
+		;check for + sign
 		cmp		al,43
 		JE		_checkPlus
-
+		
+		;check for - sign
 		cmp		al,45
 		JE		_checkNegative
 		
+		; check the char is an ASCII digit
 		cmp		al,57
 		JG		_invalidChar
-
 		cmp		al,48
 		JL		_invalidChar
 		
 		JMP		_continue
 		_checkPlus:
-			cmp		ecx,[ebp+8]; check if this is the first iteration
-			JNE		_invalidChar
+			cmp		ecx,[ebp+8]
+			JNE		_invalidChar ;+ not at start, string invalid
 			mov		edi,1
 			JMP		_continue
 		_checkNegative:
 			cmp		ecx,[ebp+8]
-			JNE		_invalidChar
+			JNE		_invalidChar ;- not at start, string invalid
 			mov		edi,2
 			JMP		_continue
 		_continue:
-		LOOP	 verifyChars
-		JMP		_allValidChars ;entire string is valid
+			LOOP	 verifyChars
 
+		JMP		_allValidChars ;valid string, proceed to conversion
 	_invalidChar:
 		JMP	_subsequentPrompt
 
 	_allValidChars:
-		mov		esi,[ebp+16] ;start of number string
-		mov		ecx,[ebp+8] ;number of bytes
+		;prepare to loop over string once again
+		mov		esi,[ebp+16] 
+		mov		ecx,[ebp+8] 
 		mov		eax,0
-
+		;CLD
+		
+		;skip first char if it is +/-
 		cmp		edi,2 
 		JE		_skipFirstChar
 		cmp		edi,1
 		JE		_skipFirstChar
-		JMP		conv
+		JMP		convChars
 		
 		
 		_skipFirstChar:
-		inc		esi
-		dec		ecx
+			inc		esi
+			dec		ecx
 		
-		CLD
-		conv:
+	
+		convChars:
 			mov		ebx,10
-			imul	ebx
+			imul	ebx ;shift char digit left
 			jo		_subsequentPrompt
 
 			push	eax ; save old remainder times 10
@@ -177,20 +204,19 @@ ReadVal	 PROC
 
 			sub		eax,48; ASCII subtraction 
 			mov		ebx,eax
-
 			pop		eax
-
+			
+			;if edi is 2 subtract otherwise add to eax
 			cmp		edi,2
 			JE		_subtract
 			add		eax,ebx
-			JMP		_check
-
+			JMP		_checkOverflow
 			_subtract:
-			sub		eax,ebx
-			_check:
-			jo		_subsequentPrompt
+				sub		eax,ebx
+			_checkOverflow:
+				jo		_subsequentPrompt
 
-			LOOP conv
+			LOOP convChars
 	call	WriteInt
 
 	pop		ecx
