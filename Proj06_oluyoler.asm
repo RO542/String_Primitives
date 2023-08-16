@@ -58,8 +58,6 @@ byteCount	DWORD   ?
 average		SDWORD ?
 sum			SDWORD ?
 
-tempVar		SDWORD ?
-tempVar2	SDWORD ?
 
 intro1		BYTE "The following program takes in 10 user inputs as strings verifies they are valid and returns the rounded average and sum that is represented.",0
 intro2		BYTE "The inputs must represent numbers [-2^31,2^31-1] to be valid ",0
@@ -73,9 +71,10 @@ showAverage	BYTE "The truncated average is:",0
 showSum		BYTE "The calculated sum is:",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
 
-invalid		byte "invalid",0
-valid		byte "valid",0
-testNum		byte "0",0
+invalid		byte "invalid",0 ; for debugging and will later be removed
+valid		byte "valid",0	;
+testNum		byte "+9000",0
+
 
 .code
 main PROC
@@ -85,17 +84,22 @@ main PROC
 	mDisplayString offset intro3
 	
 
-	;push	offset	rePrompt
-	;push	offset	promptUser
-	;push	offset	BUFFER
-	;push	sizeof	BUFFER
-	;push	offset	byteCount
-	;call	ReadVal
+	push	offset	rePrompt
+	push	offset	promptUser
+	push	offset	BUFFER
+	push	sizeof	BUFFER
+	push	offset	byteCount
+	call	ReadVal
 
 
-		push	offset	testNum
-		push	sizeof	testNum
-		call	StringtoInt
+	;	push	offset	testNum
+	;	push	sizeof	testNum
+	;	call	StringtoInt
+
+;	mov		esi,offset testNum
+;	inc		esi
+;	mov		al,[esi]
+;	call	WriteChar
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
@@ -120,6 +124,7 @@ StringtoInt	PROC
 
 		xor		eax,eax
 		lodsb
+	
 		sub		eax,48
 		mov		ebx,eax
 
@@ -152,8 +157,8 @@ ReadVal	 PROC
 	mov		esi,[ebp+16] ;start of number string
 	mov		ecx,[ebp+8] ;number of bytes
 
-;	mov		edx,0 ; representing if there is a sign
 	mov		eax,0
+	mov		ebx,0
 
 	verifyChars:	
 		lodsb	
@@ -171,38 +176,59 @@ ReadVal	 PROC
 		JL		_invalidChar
 		
 		JMP		_continue
-		
 		_checkPlus:
 			cmp		ecx,[ebp+8]; check if this is the first iteration
 			JNE		_invalidChar
-			;mov		edx,1
+		;	mov		ebx,1
 			JMP		_continue
 		_checkNegative:
 			cmp		ecx,[ebp+8]
 			JNE		_invalidChar
-			;mov		edx,-1
+	;		mov		ebx,-1
 			JMP		_continue
-
 		_continue:
-		
-
-		LOOP verifyChars
-		JMP		_allValidChars ; nothing invalid found
+		LOOP	 verifyChars
+		JMP		_allValidChars ;entire string is valid
 
 	_invalidChar:
 		mov		edx,offset invalid
 		call	WriteString
 		call	crlf
 		JMP		_subsequentPrompt
+
 	_allValidChars:
 		mov		edx,offset valid 
 		call	WriteString
 		call	crlf
+
+		mov		esi,[ebp+16] ;start of number string
+		mov		ecx,[ebp+8] ;number of bytes
+		mov		eax,0
+		add		esi,1
+	;	CLD
+		conv:
+			mov		ebx,10
+			imul	ebx
+			push	eax ; save old remainder times 10
 	
+		;	xor		eax,eax
+			lodsb
+
+			sub		eax,48
+			mov		ebx,eax
+
+			pop		eax
+			add		eax,ebx
+			LOOP conv
+		
+		;	call	WriteInt
 	_end:
+	call	WriteInt
 	pop		ebp
 	RET		20
 ReadVal	 ENDP
+
+
 
 WriteVal PROC	
 
