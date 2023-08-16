@@ -79,12 +79,15 @@ goodbye		BYTE "Thanks for using the program,bye now.",0
 main PROC
 
 ;	mDisplayString offset intro1
+;	call crlf
 ;	mDisplayString offset intro2
+;	call crlf
 ;	mDisplayString offset intro3
+;	call crlf
 	
 	
 
-	JMP		_testWriteVal
+;	JMP		_testWriteVal
 	
 	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
@@ -113,22 +116,25 @@ main PROC
 		idiv	ebx
 		mov		average,eax
 
-;		mov		ecx,ARRAYSIZE
-;		p:
-;			mov		eax,[esi]
-;			call	WriteInt
-;			add		esi,4
-;
-;			LOOP p
 		mov		eax,sum
 		call	WriteInt
+		call	crlf
 
 	_testWriteVal:
+		push	sum
+		push	offset testBuffer
 		call	WriteVal
-	;	mov		edx,offset testBuffer
-	;	call	WriteString
+		call	crlf
+	
+	mov		esi,offset ARRAY
+	mov		ecx,ARRAYSIZE
+	l3:
+		push	[esi]
+		push	offset	testBuffer
+		call	WriteVal
 
-
+		add		esi,4
+		LOOP l3
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
@@ -137,6 +143,9 @@ main ENDP
 WriteVal	PROC
 	push	ebp
 	mov		ebp,esp
+	push	ecx
+	push	esi
+	push	edi
 	
 	;clear  leftover in used registers just in case
 	xor		eax,eax
@@ -145,7 +154,7 @@ WriteVal	PROC
 	
 
 	;finding the number of digits
-	mov		eax,testVal
+	mov		eax,[ebp+12]
 	mov		ebx,10
 	xor		ecx,ecx
 	_getLen:
@@ -161,10 +170,10 @@ WriteVal	PROC
 	push		ecx
 
 	;load number and divide
-	mov		eax, testVal
+	mov		eax, [ebp+12]
 	xor		edx,edx
 	mov		ebx,10
-	mov		edi,offset testBuffer
+	mov		edi, [ebp+8];offset testBuffer
 
 	l:
 		idiv	ebx
@@ -173,36 +182,29 @@ WriteVal	PROC
 		mov		eax,edx
 		add		eax,48
 		stosb
-		;call	WriteChar
 
 		xor		edx,edx
 		pop		eax
 		LOOP l
 
 	pop		ecx
-;	mov		eax,ecx
-;	call	WriteInt
-;	call	crlf
+	mov		esi,[ebp+8];offset testBuffer
+	add		esi,ecx
+	sub		esi,1
 
-	mov		edi,offset testBuffer
-	add		edi,ecx
-	sub		edi,1
-	
-;	STD
-	l2:	
-	mov		eax,[edi]
+	STD	 
+	reversePrint:	
+		lodsb
+		call	WriteChar
+		LOOP	reversePrint
+	mov		al," "
 	call	WriteChar
-	dec		edi
-		LOOP	l2
-;	call	WriteInt
-;	add		edi,ecx
-
-;	mov		eax,[edi]
-;	call	WriteInt
-
 	
+	pop		edi
+	pop		esi
+	pop		ecx
 	pop		ebp
-	RET		
+	RET		8
 WriteVal	ENDP
 
 
@@ -309,6 +311,7 @@ ReadVal	 PROC
 	
 		convChars:
 			mov		ebx,10
+			xor		edx,edx
 			imul	ebx ;shift char digit left
 			jo		_subsequentPrompt
 
