@@ -56,7 +56,8 @@ byteCount	SDWORD   ?
 
 
 average		SDWORD ?
-sum			SDWORD ?
+sum			SDWORD 0
+subtotal	SDWORD ?
 
 
 intro1		BYTE "The following program takes in 10 user inputs as strings verifies they are valid and returns the rounded average and sum that is represented.",0
@@ -78,13 +79,28 @@ main PROC
 	mDisplayString offset intro2
 	mDisplayString offset intro3
 	
-	push	offset	rePrompt
-	push	offset	promptUser
-	push	offset	BUFFER
-	push	sizeof	BUFFER
-	push	offset	byteCount
-	call	ReadVal
 
+	mov		ecx,ARRAYSIZE
+	mov		edi,offset ARRAY
+
+	fillArray:
+		push	offset	rePrompt
+		push	offset	promptUser
+		push	offset	BUFFER
+		push	sizeof	BUFFER
+		push	offset	byteCount
+		call	ReadVal
+		add		sum,ebx
+
+		LOOP fillArray
+		mov		edx,offset showSum
+		call	WriteString
+		mov		eax,sum
+		call	WriteInt
+
+
+
+	
 
 
 
@@ -109,12 +125,13 @@ main ENDP
 ; [ebp+24] = an alternate prompt when the user enters an invalid string
 ;
 ; Returns:
-; [ebp+28] = ;;;;;;;;;;;;;;;;;;;;;;;; ? Return address of converted string
+;	ebx will contain the valid and converted integer
 ; ---------------------------------------------------------------------------------
 ReadVal	 PROC
 	push	ebp
 	mov		ebp,esp
 	push	ecx
+	push	edi
 
 	;				+20	       +16				+12			 +8
 	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
@@ -217,8 +234,9 @@ ReadVal	 PROC
 				jo		_subsequentPrompt
 
 			LOOP convChars
-	call	WriteInt
+	mov		ebx,eax
 
+	pop		edi
 	pop		ecx
 	pop		ebp
 	RET		20
