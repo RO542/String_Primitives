@@ -139,9 +139,12 @@ StringtoInt	PROC
 
 RET		8
 StringtoInt	ENDP
+
+
 ReadVal	 PROC
 	push	ebp
 	mov		ebp,esp
+	push	ecx
 
 	;			+20	       +16			+12			 +8
 	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
@@ -179,51 +182,67 @@ ReadVal	 PROC
 		_checkPlus:
 			cmp		ecx,[ebp+8]; check if this is the first iteration
 			JNE		_invalidChar
-		;	mov		ebx,1
+			mov		ebx,1
 			JMP		_continue
 		_checkNegative:
 			cmp		ecx,[ebp+8]
 			JNE		_invalidChar
-	;		mov		ebx,-1
+			mov		ebx,2 ; just used to represent negatives for lack of a better plan
 			JMP		_continue
 		_continue:
 		LOOP	 verifyChars
 		JMP		_allValidChars ;entire string is valid
 
 	_invalidChar:
-		mov		edx,offset invalid
-		call	WriteString
-		call	crlf
+		;mov		edx,offset invalid
+		;call	WriteString
+		;call	crlf
 		JMP		_subsequentPrompt
 
 	_allValidChars:
-		mov		edx,offset valid 
-		call	WriteString
-		call	crlf
+		;mov		edx,offset valid 
+		;call	WriteString
+		;call	crlf
 
+	
+	
 		mov		esi,[ebp+16] ;start of number string
 		mov		ecx,[ebp+8] ;number of bytes
 		mov		eax,0
-		add		esi,1
-	;	CLD
+		cmp		ebx,2 
+		JE		_skipFirstChar
+		cmp		ebx,1
+		JE		_skipFirstChar
+		JMP		conv
+			
+	
+
+		_skipFirstChar:
+		inc		esi
+		dec		ecx
+		
+		CLD
 		conv:
 			mov		ebx,10
 			imul	ebx
 			push	eax ; save old remainder times 10
-	
-		;	xor		eax,eax
+			xor		eax,eax
 			lodsb
 
-			sub		eax,48
+			sub		eax,48; ASCII subtraction 
 			mov		ebx,eax
 
 			pop		eax
 			add		eax,ebx
+
 			LOOP conv
-		
-		;	call	WriteInt
-	_end:
-	call	WriteInt
+
+	_finished:
+	;;;;;;;
+	; need to negatte the final number if it is negative to begin with 
+	;;;;;;	
+	call	WriteDec
+	pop		ecx
 	pop		ebp
 	RET		20
 ReadVal	 ENDP
