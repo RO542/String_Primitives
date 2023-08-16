@@ -9,7 +9,6 @@ TITLE  String Primitives/Macros     (Proj06_oluyoler)
 ;				and return the summed value/average.
 
 
-
 INCLUDE Irvine32.inc
 
 ;Macros
@@ -18,7 +17,7 @@ mDisplayString	MACRO stringAddress
 	push	edx
 	mov		edx,stringAddress
 	call	WriteString
-	call	crlf
+	;call	crlf
 	pop		edx
 ENDM
 
@@ -35,11 +34,6 @@ mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
 	call	ReadString
 	mov		[byteNum],eax ; sending back the number of bytes entered 
 
-	;mov		edx, offset bufferAddress
-	;call	WriteString
-	;mov		byteNum,eax
-	;call	WriteDec
-
 	pop eax
 	pop ecx
 	pop	edx
@@ -50,11 +44,18 @@ MAX_SDWORD =  +2147483647
 MIN_SDWORD =  -2147483648
 ARRAYSIZE  =  10
 
+
+
+testVal =	892433
+
+
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
 BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
 byteCount	SDWORD   ?
 
+
+testBuffer	BYTE	13	DUP(?)
 
 average		SDWORD ?
 sum			SDWORD 0
@@ -73,6 +74,7 @@ showAverage	BYTE "The truncated average is:",0
 showSum		BYTE "The calculated sum is:",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
 
+
 .code
 main PROC
 
@@ -80,10 +82,13 @@ main PROC
 ;	mDisplayString offset intro2
 ;	mDisplayString offset intro3
 	
+	
 
+	JMP		_testWriteVal
+	
+	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
 	mov		edi,offset ARRAY
-
 	fillArray:
 		push	offset	rePrompt
 		push	offset	promptUser
@@ -96,6 +101,8 @@ main PROC
 		add		sum,ebx
 
 		LOOP fillArray
+
+	_sum_avg:
 		mov		eax,sum
 
 		xor		eax,eax
@@ -116,14 +123,87 @@ main PROC
 		mov		eax,sum
 		call	WriteInt
 
-
-	
+	_testWriteVal:
+		call	WriteVal
+	;	mov		edx,offset testBuffer
+	;	call	WriteString
 
 
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
+
+WriteVal	PROC
+	push	ebp
+	mov		ebp,esp
+	
+	;clear  leftover in used registers just in case
+	xor		eax,eax
+	xor		ebx,ebx
+	xor		edx,edx
+	
+
+	;finding the number of digits
+	mov		eax,testVal
+	mov		ebx,10
+	xor		ecx,ecx
+	_getLen:
+		cmp		eax,0
+		JE		_foundLen	
+		xor		edx,edx
+		idiv	ebx
+		mov		ebx,10
+		inc		ecx
+		JMP		_getLen
+	_foundLen:	;ecx has the length
+	
+	push		ecx
+
+	;load number and divide
+	mov		eax, testVal
+	xor		edx,edx
+	mov		ebx,10
+	mov		edi,offset testBuffer
+
+	l:
+		idiv	ebx
+		push	eax
+
+		mov		eax,edx
+		add		eax,48
+		stosb
+		;call	WriteChar
+
+		xor		edx,edx
+		pop		eax
+		LOOP l
+
+	pop		ecx
+;	mov		eax,ecx
+;	call	WriteInt
+;	call	crlf
+
+	mov		edi,offset testBuffer
+	add		edi,ecx
+	sub		edi,1
+	
+;	STD
+	l2:	
+	mov		eax,[edi]
+	call	WriteChar
+	dec		edi
+		LOOP	l2
+;	call	WriteInt
+;	add		edi,ecx
+
+;	mov		eax,[edi]
+;	call	WriteInt
+
+	
+	pop		ebp
+	RET		
+WriteVal	ENDP
 
 
 ; ---------------------------------------------------------------------------------
