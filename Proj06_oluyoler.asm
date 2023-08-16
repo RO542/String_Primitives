@@ -52,7 +52,7 @@ ARRAYSIZE  =  10
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
 BUFFER		BYTE	12	DUP(0) ; including sign ? 
-byteCount	DWORD   ?
+byteCount	SDWORD   ?
 
 
 average		SDWORD ?
@@ -71,11 +71,6 @@ showAverage	BYTE "The truncated average is:",0
 showSum		BYTE "The calculated sum is:",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
 
-invalid		byte "invalid",0 ; for debugging and will later be removed
-valid		byte "valid",0	;
-testNum		byte "+9000",0
-
-
 .code
 main PROC
 
@@ -83,7 +78,6 @@ main PROC
 	mDisplayString offset intro2
 	mDisplayString offset intro3
 	
-
 	push	offset	rePrompt
 	push	offset	promptUser
 	push	offset	BUFFER
@@ -92,53 +86,12 @@ main PROC
 	call	ReadVal
 
 
-	;	push	offset	testNum
-	;	push	sizeof	testNum
-	;	call	StringtoInt
 
-;	mov		esi,offset testNum
-;	inc		esi
-;	mov		al,[esi]
-;	call	WriteChar
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
-; (insert additional procedures here)
 
-
-StringtoInt	PROC
-	push	ebp
-	mov		ebp,esp
-
-	mov		esi,[ebp+12]
-	mov		ecx,[ebp+8]
-	dec		ecx
-	mov		eax,0
-	CLD
-	conv:
-		mov		ebx,10
-		imul	ebx
-		push	eax ; save old remainder times 10
-	
-
-		xor		eax,eax
-		lodsb
-	
-		sub		eax,48
-		mov		ebx,eax
-
-		pop		eax
-		add		eax,ebx
-		
-		;call	WriteInt
-
-		LOOP conv
-		_break:
-		call	WriteInt
-
-RET		8
-StringtoInt	ENDP
 
 
 ReadVal	 PROC
@@ -187,24 +140,17 @@ ReadVal	 PROC
 		_checkNegative:
 			cmp		ecx,[ebp+8]
 			JNE		_invalidChar
-			mov		ebx,2 ; just used to represent negatives for lack of a better plan
+			mov		ebx,2 ; using 2 because -1 fails 
 			JMP		_continue
 		_continue:
 		LOOP	 verifyChars
 		JMP		_allValidChars ;entire string is valid
 
 	_invalidChar:
-		;mov		edx,offset invalid
-		;call	WriteString
-		;call	crlf
 		JMP		_subsequentPrompt
 
 	_allValidChars:
-		;mov		edx,offset valid 
-		;call	WriteString
-		;call	crlf
-
-	
+		
 	
 		mov		esi,[ebp+16] ;start of number string
 		mov		ecx,[ebp+8] ;number of bytes
@@ -215,7 +161,6 @@ ReadVal	 PROC
 		JE		_skipFirstChar
 		JMP		conv
 			
-	
 
 		_skipFirstChar:
 		inc		esi
@@ -239,19 +184,13 @@ ReadVal	 PROC
 
 	_finished:
 	;;;;;;;
-	; need to negatte the final number if it is negative to begin with 
-	;;;;;;	
-	call	WriteDec
+	; negate final number here if needed
+	;call	WriteDec ;use WriteDec for testing only (remove later)
 	pop		ecx
 	pop		ebp
 	RET		20
 ReadVal	 ENDP
 
 
-
-WriteVal PROC	
-
-RET
-WriteVal ENDP
 
 END main
