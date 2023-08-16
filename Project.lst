@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:56:48
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
@@ -282,7 +282,6 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
  000000A4  8B 4D 08			mov		ecx,[ebp+8] ;number of bytes
 
  000000A7  B8 00000000			mov		eax,0
-				;	mov		ebx,0
  000000AC  BF 00000000			mov		edi,0
 
  000000B1				verifyChars:	
@@ -304,13 +303,11 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
  000000C4					_checkPlus:
  000000C4  3B 4D 08					cmp		ecx,[ebp+8]; check if this is the first iteration
  000000C7  75 17					JNE		_invalidChar
-				;			mov		ebx,1
  000000C9  BF 00000001					mov		edi,1
  000000CE  EB 0C					JMP		_continue
  000000D0					_checkNegative:
  000000D0  3B 4D 08					cmp		ecx,[ebp+8]
  000000D3  75 0B					JNE		_invalidChar
-					;		mov		ebx,2 ; using 2 because -1 fails 
  000000D5  BF 00000002					mov		edi,2
  000000DA  EB 00					JMP		_continue
  000000DC					_continue:
@@ -320,16 +317,9 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
  000000E0				_invalidChar:
  000000E0  EB 9C				JMP	_subsequentPrompt
 
-						
  000000E2				_allValidChars:
-						
-					
  000000E2  8B 75 10				mov		esi,[ebp+16] ;start of number string
  000000E5  8B 4D 08				mov		ecx,[ebp+8] ;number of bytes
-
-
-				;		push	ebx
-
  000000E8  B8 00000000				mov		eax,0
 
  000000ED  83 FF 02				cmp		edi,2 
@@ -362,28 +352,15 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
  00000116  74 04					JE		_subtract
  00000118  03 C3					add		eax,ebx
  0000011A  EB 02					JMP		_check
+
  0000011C						_subtract:
  0000011C  2B C3					sub		eax,ebx
-
  0000011E						_check:
  0000011E  0F 80 FFFFFF5A				jo		_subsequentPrompt
 
  00000124  E2 D6					LOOP conv
-
-				;	pop		ebx
-					;cmp		ebx,2
-					;JE		_negate
-					;JMP		_return
-
- 00000126				_negate:
-					;neg		eax
-					;cmp		eax,MIN_SDWORD
-					;JL		_subsequentPrompt
- 00000126				_return:
  00000126  E8 00000000 E		call	WriteInt
-					;;;;;;;
-					; negate final number here if needed
-					;call	WriteDec ;use WriteDec for testing only (remove later)
+
  0000012B  59				pop		ecx
  0000012C  5D				pop		ebp
  0000012D  C2 0014			RET		20
@@ -392,7 +369,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:35:36
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/16/23 07:56:48
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -579,8 +556,6 @@ ReadVal  . . . . . . . . . . . .	P Near	 00000055 _TEXT	Length= 000000DB Public 
   conv . . . . . . . . . . . . .	L Near	 000000FC _TEXT	
   _subtract  . . . . . . . . . .	L Near	 0000011C _TEXT	
   _check . . . . . . . . . . . .	L Near	 0000011E _TEXT	
-  _negate  . . . . . . . . . . .	L Near	 00000126 _TEXT	
-  _return  . . . . . . . . . . .	L Near	 00000126 _TEXT	
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL

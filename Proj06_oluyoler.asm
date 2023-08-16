@@ -114,7 +114,6 @@ ReadVal	 PROC
 	mov		ecx,[ebp+8] ;number of bytes
 
 	mov		eax,0
-;	mov		ebx,0
 	mov		edi,0
 
 	verifyChars:	
@@ -136,13 +135,11 @@ ReadVal	 PROC
 		_checkPlus:
 			cmp		ecx,[ebp+8]; check if this is the first iteration
 			JNE		_invalidChar
-;			mov		ebx,1
 			mov		edi,1
 			JMP		_continue
 		_checkNegative:
 			cmp		ecx,[ebp+8]
 			JNE		_invalidChar
-	;		mov		ebx,2 ; using 2 because -1 fails 
 			mov		edi,2
 			JMP		_continue
 		_continue:
@@ -152,16 +149,9 @@ ReadVal	 PROC
 	_invalidChar:
 		JMP	_subsequentPrompt
 
-		
 	_allValidChars:
-		
-	
 		mov		esi,[ebp+16] ;start of number string
 		mov		ecx,[ebp+8] ;number of bytes
-
-
-;		push	ebx
-
 		mov		eax,0
 
 		cmp		edi,2 
@@ -194,28 +184,15 @@ ReadVal	 PROC
 			JE		_subtract
 			add		eax,ebx
 			JMP		_check
+
 			_subtract:
 			sub		eax,ebx
-
 			_check:
 			jo		_subsequentPrompt
 
 			LOOP conv
-
-;	pop		ebx
-	;cmp		ebx,2
-	;JE		_negate
-	;JMP		_return
-
-	_negate:
-	;neg		eax
-	;cmp		eax,MIN_SDWORD
-	;JL		_subsequentPrompt
-	_return:
 	call	WriteInt
-	;;;;;;;
-	; negate final number here if needed
-	;call	WriteDec ;use WriteDec for testing only (remove later)
+
 	pop		ecx
 	pop		ebp
 	RET		20
