@@ -157,8 +157,6 @@ ReadVal	 PROC
 		mov		ecx,[ebp+8] ;number of bytes
 
 
-;		mov		eax,ebx
-		;call	WriteInt
 		push	ebx
 
 		mov		eax,0
@@ -178,7 +176,7 @@ ReadVal	 PROC
 		conv:
 			mov		ebx,10
 			imul	ebx
-		;	jo		
+		;	jo		 ;;;;;;;;;;;;
 
 			push	eax ; save old remainder times 10
 			xor		eax,eax
@@ -189,11 +187,11 @@ ReadVal	 PROC
 
 			pop		eax
 			add		eax,ebx
+		;;;;;;;;;;;;;;;detect overflows here
 
 			LOOP conv
 
 	pop		ebx
-;	mov		eax,ebx
 	cmp		ebx,2
 	JE		_negate
 	JMP		_return
