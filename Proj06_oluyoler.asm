@@ -55,7 +55,7 @@ BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rej
 byteCount	SDWORD   ?
 
 
-testBuffer	BYTE	12	DUP(?)
+testBuffer	BYTE	12	DUP(0)
 
 average		SDWORD ?
 sum			SDWORD 0
@@ -85,9 +85,8 @@ main PROC
 ;	mDisplayString offset intro3
 ;	call crlf
 	
-	
 
-	
+	JMP	_ender
 	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
 	mov		edi,offset ARRAY
@@ -129,27 +128,23 @@ main PROC
 		mov		eax,average
 		call	WriteInt
 		
+		_ender:
+		push	testVal
+		push	offset testBuffer
+		call	WriteVal
 
-	
 
-	;mov		eax,average
-	;call	WriteInt
-	;call	crlf
-	;mov		eax,sum
-	;call	WriteInt
-	;call	crlf
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
 
+
+
+
 WriteVal	PROC
 	push	ebp
 	mov		ebp,esp
-	push	ecx
-	push	esi
-	push	edi
-	
 	;clear  leftover in used registers just in case
 	xor		eax,eax
 	xor		ebx,ebx
@@ -169,11 +164,11 @@ WriteVal	PROC
 		inc		ecx
 		JMP		_getLen
 	_foundLen:	;ecx has the length
-	
 	push		ecx
 
+
 	;load number and divide
-	mov		eax, [ebp+12]
+	mov		eax, [ebp+12];number itself
 	xor		edx,edx
 	mov		ebx,10
 	mov		edi, [ebp+8];offset testBuffer
@@ -191,21 +186,13 @@ WriteVal	PROC
 		LOOP l
 
 	pop		ecx
-	mov		esi,[ebp+8];offset testBuffer
-	add		esi,ecx
-	sub		esi,1
+	mov		eax,ecx
+	call	WriteInt
+	call	crlf
 
-	STD	 
-	reversePrint:	
-		lodsb
-		call	WriteChar
-		LOOP	reversePrint
-	mov		al," "
-	call	WriteChar
+	mov		edx,offset testBuffer
+	call	WriteString
 	
-	pop		edi
-	pop		esi
-	pop		ecx
 	pop		ebp
 	RET		8
 WriteVal	ENDP
