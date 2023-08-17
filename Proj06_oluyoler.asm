@@ -56,7 +56,7 @@ BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rej
 byteCount	SDWORD   ?
 
 
-testBuffer	BYTE	12	DUP(0)
+testBuffer	BYTE	12	DUP(?)
 
 average		SDWORD ?
 sum			SDWORD 0
@@ -112,33 +112,26 @@ main PROC
 
 	mDisplayString	offset	YouEntered
 	call	crlf
-	;read the values in ARRAY out as strings
-	mov		esi,offset ARRAY
-	mov		ecx,ARRAYSIZE
+
+	mov		esi,offset ARRAY ; which stores the sdwords to be printed
+	mov		ecx,ARRAYSIZE ; number of elements
 	convertArray:
-		mov		eax,[esi]
-		push	eax
+		push	[esi]
 		push	offset testBuffer
 		call	WriteVal
 		add		esi,4
-		loop	convertArray
+		LOOP	convertArray
+
 	call	crlf
-
-
-
-	mDisplayString	offset	showSum
-	call	crlf	
-	
+	mDisplayString offset showSum
 	push	sum
 	push	offset testBuffer
 	call	WriteVal
 	call	crlf
 
-	JMP		_testSection
-	
-	mDisplayString	offset	showAverage
+	mDisplayString offset showAverage
 	push	average
-	push	offset	testBuffer
+	push	offset testBuffer
 	call	WriteVal
 
 
@@ -150,33 +143,43 @@ main ENDP
 
 
 
-
 WriteVal	PROC
 	push	ebp
 	mov		ebp,esp
 	
-
+	;saving many registers 
+	push	ecx
 	push	eax
 	push	ebx
 	push	edx
-	push	ecx
+	
 	push	esi
 	push	edi
 
-	;clear  leftover in used registers just in case
+	;clear  most registers
 	xor		eax,eax
 	xor		ebx,ebx
 	xor		edx,edx
 	xor		ecx,ecx
 	
+	;clear the character buffer 
+	mov edi, offset testBuffer
+	mov ecx, 12
+	xor eax, eax
+	rep stosb
 	
 	;preparing for division/conversion to string
-	mov		ebx,10
 	mov		eax,[ebp+12]
+	cmp		eax,0
+	je		_zeroEdgeCase
+
+	mov		ebx,10
 	mov		edi,[ebp+8]
 	cmp		eax,0
 	JNL		_getLen
 	neg		eax 	;handle Negative
+	
+
 
 	
 	_getLen:
@@ -189,8 +192,8 @@ WriteVal	PROC
 		inc		ecx
 		JMP		_getLen
 	_foundLen:	;ecx has the length
-		
-	
+
+
 	mov		eax,[ebp+12]
 	cmp		eax,0
 	JNL		printL
@@ -205,20 +208,34 @@ WriteVal	PROC
 		mov		eax,edx
 		stosb
 		LOOP	printL
-		mov		BYTE PTR [edi], 0 ; null termination
+	mov		BYTE PTR [edi], 0 ; null termination
+	JMP		_end
+
+		
+	_zeroEdgeCase:
+
+		mov		edi,offset testBuffer
+		mov		ebx,[edi]
+		add		ebx,48
+		mov		[edi],ebx
+		mov		 BYTE PTR [edi +1 ], 0  ; Null terminate
+
+
+
 	
+	_end:
 	mDisplayString	[ebp+8]
 	mov		al," "
 	call	WriteChar
 	
 
-
+	;restoring many registers
 	pop		edi
 	pop		esi
-	pop		ecx
 	pop		edx
 	pop		ebx
 	pop		eax
+	pop		ecx
 
 	pop		ebp
 	RET		8
