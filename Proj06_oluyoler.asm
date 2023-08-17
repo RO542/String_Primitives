@@ -192,7 +192,9 @@ main ENDP
 ;	
 ; Receives:
 ; [ebp+8]  = The integer being converted
-; [ebp+12] = pointer to character buffer used to display the converted number
+; [ebp+12] = address character buffer used to display the converted number
+; [ebp+16] = address of a string representation of the smallest SDWORD
+;	this is used because this is the only SDWORD that causes an overflow when negated
 ; 
 ;Returns:
 ;	None but the converted integer is printed to the console.
@@ -233,7 +235,7 @@ WriteVal	PROC
 	cmp		eax,0
 	JNL		_getLen
 	neg		eax 	;handle Negative
-	
+	jo		_minEdgecase
 
 
 	_getLen:
@@ -273,6 +275,13 @@ WriteVal	PROC
 		add		ebx,48
 		mov		[edi],ebx
 		mov		 BYTE PTR [edi +1 ], 0  ; Null terminate
+		JMP		_end
+
+
+	_minEdgecase:
+		mov		esi,offset minSDWORD
+		mov		ecx,11
+		rep		movsb
 
 
 
