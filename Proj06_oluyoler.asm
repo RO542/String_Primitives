@@ -1,10 +1,10 @@
 TITLE  String Primitives/Macros     (Proj06_oluyoler)
 
 ; Author: Richard Oluyole
-; Last Modified: 07/18/2023
+; Last Modified: 08/18/2023
 ; OSU email address: oluyoler@oregonstate.edu
 ; Course number/section:   CS271 Section 400
-; Project Number:      6           Due Date: 07/18/2023
+; Project Number:      6           Due Date: 08/18/2023
 ; Description: This program will receive and validate user input as a string, convert and sum the inputs, 
 ;				and return the summed value/average.
 
@@ -88,7 +88,7 @@ minSDWORD	BYTE	"-2147483648",0
 
 intro1		BYTE "The following program takes in 10 user inputs as strings verifies they are valid and returns the rounded average and sum that is represented.",0
 intro2		BYTE "The inputs must represent numbers [-2^31,2^31-1] to be valid. ",0
-intro3		BYTE "After collecting 10 numbers the running sum and rounded average will be displayed.",0
+intro3		BYTE "After collecting 10 numbers the sum,average, and numbers used to find them will be displayed.",0
 promptUser	BYTE "Enter in a signed number: ",0
 rePrompt	BYTE "Too big/small or non-number entered: ",0
 YouEntered	BYTE "Here are your 10 inputs",0
@@ -248,18 +248,18 @@ WriteVal	PROC
 	_foundLen:	; ecx contains the number of digits
 	mov		eax,[ebp+12]
 	cmp		eax,0
-	JNL		printL
+	JNL		loadBuffer
 	push	 "-" -48
 	inc		ecx
 
 
 	CLD
-	printL:
+	loadBuffer:
 		pop		edx
 		add		edx,48
 		mov		eax,edx
 		stosb
-		LOOP	printL
+		LOOP	loadBuffer
 	mov		BYTE PTR [edi], 0 ; null termination
 	JMP		_end
 
@@ -410,15 +410,16 @@ ReadVal	 PROC
 		
 	
 		convChars:
+			;shift char digit left using multiplication
 			mov		ebx,10
 			xor		edx,edx
-			imul	ebx ;shift char digit left
+			imul	ebx
 			jo		_subsequentPrompt
-
+			
+			;turn character to integer 
 			push	eax 
 			xor		eax,eax
 			lodsb
-
 			sub		eax,48; ASCII subtraction 
 			mov		ebx,eax
 			pop		eax

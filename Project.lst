@@ -1,14 +1,14 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
 				TITLE  String Primitives/Macros     (Proj06_oluyoler)
 
 				; Author: Richard Oluyole
-				; Last Modified: 07/18/2023
+				; Last Modified: 08/18/2023
 				; OSU email address: oluyoler@oregonstate.edu
 				; Course number/section:   CS271 Section 400
-				; Project Number:      6           Due Date: 07/18/2023
+				; Project Number:      6           Due Date: 08/18/2023
 				; Description: This program will receive and validate user input as a string, convert and sum the inputs, 
 				;				and return the summed value/average.
 
@@ -157,30 +157,32 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 	   6F 20 62 65 20
 	   76 61 6C 69 64
 	   2E 20 00
- 00000141 41 66 74 65 72	intro3		BYTE "After collecting 10 numbers the running sum and rounded average will be displayed.",0
+ 00000141 41 66 74 65 72	intro3		BYTE "After collecting 10 numbers the sum,average, and numbers used to find them will be displayed.",0
 	   20 63 6F 6C 6C
 	   65 63 74 69 6E
 	   67 20 31 30 20
 	   6E 75 6D 62 65
 	   72 73 20 74 68
-	   65 20 72 75 6E
-	   6E 69 6E 67 20
-	   73 75 6D 20 61
-	   6E 64 20 72 6F
-	   75 6E 64 65 64
-	   20 61 76 65 72
-	   61 67 65 20 77
-	   69 6C 6C 20 62
-	   65 20 64 69 73
-	   70 6C 61 79 65
-	   64 2E 00
- 00000194 45 6E 74 65 72	promptUser	BYTE "Enter in a signed number: ",0
+	   65 20 73 75 6D
+	   2C 61 76 65 72
+	   61 67 65 2C 20
+	   61 6E 64 20 6E
+	   75 6D 62 65 72
+	   73 20 75 73 65
+	   64 20 74 6F 20
+	   66 69 6E 64 20
+	   74 68 65 6D 20
+	   77 69 6C 6C 20
+	   62 65 20 64 69
+	   73 70 6C 61 79
+	   65 64 2E 00
+ 0000019F 45 6E 74 65 72	promptUser	BYTE "Enter in a signed number: ",0
 	   20 69 6E 20 61
 	   20 73 69 67 6E
 	   65 64 20 6E 75
 	   6D 62 65 72 3A
 	   20 00
- 000001AF 54 6F 6F 20 62	rePrompt	BYTE "Too big/small or non-number entered: ",0
+ 000001BA 54 6F 6F 20 62	rePrompt	BYTE "Too big/small or non-number entered: ",0
 	   69 67 2F 73 6D
 	   61 6C 6C 20 6F
 	   72 20 6E 6F 6E
@@ -188,23 +190,23 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 	   65 72 20 65 6E
 	   74 65 72 65 64
 	   3A 20 00
- 000001D5 48 65 72 65 20	YouEntered	BYTE "Here are your 10 inputs",0
+ 000001E0 48 65 72 65 20	YouEntered	BYTE "Here are your 10 inputs",0
 	   61 72 65 20 79
 	   6F 75 72 20 31
 	   30 20 69 6E 70
 	   75 74 73 00
- 000001ED 54 68 65 20 74	showAverage	BYTE "The truncated average is: ",0
+ 000001F8 54 68 65 20 74	showAverage	BYTE "The truncated average is: ",0
 	   72 75 6E 63 61
 	   74 65 64 20 61
 	   76 65 72 61 67
 	   65 20 69 73 3A
 	   20 00
- 00000208 54 68 65 20 63	showSum		BYTE "The calculated sum is: ",0
+ 00000213 54 68 65 20 63	showSum		BYTE "The calculated sum is: ",0
 	   61 6C 63 75 6C
 	   61 74 65 64 20
 	   73 75 6D 20 69
 	   73 3A 20 00
- 00000220 54 68 61 6E 6B	goodbye		BYTE "Thanks for using the program,bye now.",0
+ 0000022B 54 68 61 6E 6B	goodbye		BYTE "Thanks for using the program,bye now.",0
 	   73 20 66 6F 72
 	   20 75 73 69 6E
 	   67 20 74 68 65
@@ -242,8 +244,8 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 
 
  0000003D				fillArray:
- 0000003D  68 000001AF R			push	offset	rePrompt
- 00000042  68 00000194 R			push	offset	promptUser
+ 0000003D  68 000001BA R			push	offset	rePrompt
+ 00000042  68 0000019F R			push	offset	promptUser
  00000047  68 00000028 R			push	offset	BUFFER
  0000004C  6A 28				push	sizeof	BUFFER
  0000004E  68 00000050 R			push	offset	byteCount
@@ -268,7 +270,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 					;convert and print the user's integer inputs
 					mDisplayString	offset	YouEntered
  0000007B  52		     1		push	edx
- 0000007C  BA 000001D5 R     1		mov		edx,offset	YouEntered
+ 0000007C  BA 000001E0 R     1		mov		edx,offset	YouEntered
  00000081  E8 00000000 E     1		call	WriteString
  00000086  5A		     1		pop		edx
  00000087  E8 00000000 E		call	crlf
@@ -288,7 +290,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
  000000B1  E8 00000000 E		call	crlf
 					mDisplayString offset showSum
  000000B6  52		     1		push	edx
- 000000B7  BA 00000208 R     1		mov		edx,offset showSum
+ 000000B7  BA 00000213 R     1		mov		edx,offset showSum
  000000BC  E8 00000000 E     1		call	WriteString
  000000C1  5A		     1		pop		edx
  000000C2  68 00000068 R		push	offset minSDWORD
@@ -302,7 +304,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
  000000DC  E8 00000000 E		call	crlf
 					mDisplayString offset showAverage
  000000E1  52		     1		push	edx
- 000000E2  BA 000001ED R     1		mov		edx,offset showAverage
+ 000000E2  BA 000001F8 R     1		mov		edx,offset showAverage
  000000E7  E8 00000000 E     1		call	WriteString
  000000EC  5A		     1		pop		edx
  000000ED  68 00000068 R		push	offset minSDWORD
@@ -315,7 +317,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 					;display goodbye message
 					mDisplayString offset goodbye
  0000010C  52		     1		push	edx
- 0000010D  BA 00000220 R     1		mov		edx,offset goodbye
+ 0000010D  BA 0000022B R     1		mov		edx,offset goodbye
  00000112  E8 00000000 E     1		call	WriteString
  00000117  5A		     1		pop		edx
 
@@ -328,7 +330,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 
 
 				; ---------------------------------------------------------------------------------
-				; Name:WriteVal 
+				; Name: WriteVal 
 				; WriteVal takes in an integer and converts it to a string that can be shown on 
 				; the console.
 				; 
@@ -341,7 +343,6 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 				; [ebp+8]  = The integer being converted
 				; [ebp+12] = address character buffer used to display the converted number
 				; [ebp+16] = address of a string representation of the smallest SDWORD
-				;	this is used because this is the only SDWORD that causes an overflow when negated
 				; 
 				;Returns:
 				;	None but the converted integer is printed to the console.
@@ -396,18 +397,18 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
  00000162				_foundLen:	; ecx contains the number of digits
  00000162  8B 45 0C			mov		eax,[ebp+12]
  00000165  83 F8 00			cmp		eax,0
- 00000168  7D 04			JNL		printL
+ 00000168  7D 04			JNL		loadBuffer
  0000016A  6A FD			push	 "-" -48
  0000016C  41				inc		ecx
 
 
  0000016D  FC				CLD
- 0000016E				printL:
+ 0000016E				loadBuffer:
  0000016E  5A					pop		edx
  0000016F  83 C2 30				add		edx,48
  00000172  8B C2				mov		eax,edx
  00000174  AA					stosb
- 00000175  E2 F7				LOOP	printL
+ 00000175  E2 F7				LOOP	loadBuffer
  00000177  C6 07 00			mov		BYTE PTR [edi], 0 ; null termination
  0000017A  EB 1A			JMP		_end
 
@@ -626,7 +627,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 12:06:20
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -728,7 +729,7 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000246 Para	  Public  'DATA'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000251 Para	  Public  'DATA'	
 _TEXT  . . . . . . . . . . . . .	32 Bit	 0000028D Para	  Public  'CODE'	
 
 
@@ -852,7 +853,7 @@ WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteVal . . . . . . . . . . . .	P Near	 0000011F _TEXT	Length= 00000092 Public STDCALL
   _getLen  . . . . . . . . . . .	L Near	 00000155 _TEXT	
   _foundLen  . . . . . . . . . .	L Near	 00000162 _TEXT	
-  printL . . . . . . . . . . . .	L Near	 0000016E _TEXT	
+  loadBuffer . . . . . . . . . .	L Near	 0000016E _TEXT	
   _zeroEdgeCase  . . . . . . . .	L Near	 0000017C _TEXT	
   _minEdgecase . . . . . . . . .	L Near	 0000018C _TEXT	
   _end . . . . . . . . . . . . .	L Near	 00000196 _TEXT	
@@ -1083,7 +1084,7 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
-YouEntered . . . . . . . . . . .	Byte	 000001D5 _DATA	
+YouEntered . . . . . . . . . . .	Byte	 000001E0 _DATA	
 average  . . . . . . . . . . . .	DWord	 00000060 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
@@ -1092,7 +1093,7 @@ byteCount  . . . . . . . . . . .	DWord	 00000050 _DATA
 charBuffer . . . . . . . . . . .	Byte	 00000054 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
-goodbye  . . . . . . . . . . . .	Byte	 00000220 _DATA	
+goodbye  . . . . . . . . . . . .	Byte	 0000022B _DATA	
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
 intro1 . . . . . . . . . . . . .	Byte	 00000074 _DATA	
@@ -1106,11 +1107,11 @@ lightMagenta . . . . . . . . . .	Number	 0000000Dh
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
 minSDWORD  . . . . . . . . . . .	Byte	 00000068 _DATA	
-promptUser . . . . . . . . . . .	Byte	 00000194 _DATA	
-rePrompt . . . . . . . . . . . .	Byte	 000001AF _DATA	
+promptUser . . . . . . . . . . .	Byte	 0000019F _DATA	
+rePrompt . . . . . . . . . . . .	Byte	 000001BA _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-showAverage  . . . . . . . . . .	Byte	 000001ED _DATA	
-showSum  . . . . . . . . . . . .	Byte	 00000208 _DATA	
+showAverage  . . . . . . . . . .	Byte	 000001F8 _DATA	
+showSum  . . . . . . . . . . . .	Byte	 00000213 _DATA	
 sum  . . . . . . . . . . . . . .	DWord	 00000064 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
