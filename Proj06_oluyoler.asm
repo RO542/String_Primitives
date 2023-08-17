@@ -46,7 +46,7 @@ ARRAYSIZE  =  10
 
 
 
-testVal		= -217
+testVal		= 217
 
 
 .data
@@ -151,13 +151,19 @@ WriteVal	PROC
 	xor		edx,edx
 	xor		ecx,ecx
 	
-	mov		eax,[ebp+12]
-
-	
-	;check negative here and negate if neeeded
 	mov		ebx,10
+	mov		eax,[ebp+12]
+	mov		edi,[ebp+8]
+	
+	
+	cmp		eax,0
+	JNL		_getLen
+	;handle Negative
+
 	neg		eax
 
+	
+	mov		ebx,10
 	_getLen:
 		cmp		eax,0
 		JLE		_foundLen	
@@ -169,7 +175,14 @@ WriteVal	PROC
 		JMP		_getLen
 	_foundLen:	;ecx has the length
 		
-	mov		edi,[ebp+8]
+	
+	mov		eax,[ebp+12]
+	cmp		eax,0
+	JNL		printL
+	
+	push	 "-" -48
+	inc		ecx
+
 	CLD
 	printL:
 		pop		edx
