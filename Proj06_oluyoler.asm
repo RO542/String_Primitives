@@ -84,20 +84,17 @@ byteCount	SDWORD   ?
 charBuffer	BYTE	12	DUP(?)
 average		SDWORD	?
 sum			SDWORD	0
-
+minSDWORD	BYTE	"-2147483648",0
 
 intro1		BYTE "The following program takes in 10 user inputs as strings verifies they are valid and returns the rounded average and sum that is represented.",0
-intro2		BYTE "The inputs must represent numbers [-2^31,2^31-1] to be valid ",0
+intro2		BYTE "The inputs must represent numbers [-2^31,2^31-1] to be valid. ",0
 intro3		BYTE "After collecting 10 numbers the running sum and rounded average will be displayed.",0
-
 promptUser	BYTE "Enter in a signed number: ",0
-rePrompt	BYTE "What you entered is either too large,too small, or not a number.Try again: ",0
-
+rePrompt	BYTE "Too big/small or non-number entered: ",0
 YouEntered	BYTE "Here are your 10 inputs",0
-showAverage	BYTE "The truncated average is:",0
-showSum		BYTE "The calculated sum is:",0
+showAverage	BYTE "The truncated average is: ",0
+showSum		BYTE "The calculated sum is: ",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
-minSDWORD	BYTE "-2147483648",0
 
 .code
 main PROC
@@ -145,6 +142,7 @@ main PROC
 	mov		esi,offset ARRAY ; which stores the sdwords to be printed
 	mov		ecx,ARRAYSIZE ; number of elements
 	printInts:
+		push	offset minSDWORD
 		push	[esi]
 		push	offset charBuffer
 		call	WriteVal
@@ -156,6 +154,7 @@ main PROC
 	call	crlf
 	call	crlf
 	mDisplayString offset showSum
+	push	offset minSDWORD
 	push	sum
 	push	offset charBuffer
 	call	WriteVal
@@ -165,6 +164,7 @@ main PROC
 	;print the average calculated
 	call	crlf
 	mDisplayString offset showAverage
+	push	offset minSDWORD
 	push	average
 	push	offset charBuffer
 	call	WriteVal
@@ -181,7 +181,7 @@ main ENDP
 
 
 ; ---------------------------------------------------------------------------------
-; Name:WriteVal 
+; Name: WriteVal 
 ; WriteVal takes in an integer and converts it to a string that can be shown on 
 ; the console.
 ; 
@@ -194,7 +194,6 @@ main ENDP
 ; [ebp+8]  = The integer being converted
 ; [ebp+12] = address character buffer used to display the converted number
 ; [ebp+16] = address of a string representation of the smallest SDWORD
-;	this is used because this is the only SDWORD that causes an overflow when negated
 ; 
 ;Returns:
 ;	None but the converted integer is printed to the console.
@@ -209,11 +208,10 @@ WriteVal	PROC
 	push	eax
 	push	ebx
 	push	edx
-	
 	push	esi
 	push	edi
 
-	;clear  most registers
+	;clear registers that will be used
 	xor		eax,eax
 	xor		ebx,ebx
 	xor		edx,edx
@@ -234,28 +232,26 @@ WriteVal	PROC
 	mov		edi,[ebp+8]
 	cmp		eax,0
 	JNL		_getLen
-	neg		eax 	;handle Negative
+	neg		eax 	;take absolute value for conversion
 	jo		_minEdgecase
 
 
 	_getLen:
 		cmp		eax,0
 		JLE		_foundLen	
-	
 		idiv	ebx
 		push	edx ; save remainder to stack
 		xor		edx,edx
 		inc		ecx
 		JMP		_getLen
-	_foundLen:	;ecx has the length
 
-
+	_foundLen:	; ecx contains the number of digits
 	mov		eax,[ebp+12]
 	cmp		eax,0
 	JNL		printL
-	
 	push	 "-" -48
 	inc		ecx
+
 
 	CLD
 	printL:
@@ -274,15 +270,22 @@ WriteVal	PROC
 		mov		ebx,[edi]
 		add		ebx,48
 		mov		[edi],ebx
-		mov		 BYTE PTR [edi +1 ], 0  ; Null terminate
+		mov		 BYTE PTR [edi +1 ], 0 ; null termination
 		JMP		_end
 
 
 	_minEdgecase:
-		mov		esi,offset minSDWORD
+	; -------------------------------------------------------------------------------
+	; This is a case of an SDWORD where the value is minimum possible -2147483648.
+	; This number is a valid SDWORD but the conversion to a string only uses
+	;	positive numbers and negates negative numbers first .
+	; The maximum allowed SDWORD is 2147483647 and so the negation causes an overflow.
+	; The code below handles this case specifically by assuming that the integer was
+	;	already verified as valid in a different procedure.
+	; -------------------------------------------------------------------------------
+		mov		esi,[ebp+16]
 		mov		ecx,11
 		rep		movsb
-
 
 
 	_end:
@@ -300,7 +303,7 @@ WriteVal	PROC
 	pop		ecx
 
 	pop		ebp
-	RET		8
+	RET		12
 WriteVal	ENDP
 
 
@@ -309,6 +312,8 @@ WriteVal	ENDP
 ;
 ; Repeatedly takes user input until the user enters a valid SDWORD and converts the
 ;	the ASCII characters to an integer.
+;
+; Registers changed : ebx
 ;
 ; Preconditions: None 
 ;	
@@ -329,8 +334,6 @@ ReadVal	 PROC
 	push	edi
 	push	eax
 
-	;				+20	       +16				+12			 +8
-	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
 	_firstPrompt:
 		mGetString [ebp+20],[ebp+16],[ebp+12],[ebp+8]
 		JMP		_verifyLength
