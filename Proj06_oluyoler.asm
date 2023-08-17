@@ -55,7 +55,7 @@ BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rej
 byteCount	SDWORD   ?
 
 
-testBuffer	BYTE	13	DUP(?)
+testBuffer	BYTE	12	DUP(?)
 
 average		SDWORD ?
 sum			SDWORD 0
@@ -87,7 +87,6 @@ main PROC
 	
 	
 
-;	JMP		_testWriteVal
 	
 	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
@@ -105,36 +104,40 @@ main PROC
 
 		LOOP fillArray
 
-	_sum_avg:
-		mov		eax,sum
+	
+	mov		esi,offset ARRAY
+	mov		ecx,ARRAYSIZE
+	l2r2:
+		mov		eax,[esi]
+		call	WriteInt
+		call	crlf
+		add		esi,4
+		loop l2r2
 
-		xor		eax,eax
-		xor		edx,edx
-		
+
 		mov		eax,sum
-		mov		ebx,10
+		mov		edx,0
+		mov		ebx,ARRAYSIZE
+		mov		eax,sum
+		cdq
 		idiv	ebx
 		mov		average,eax
 
 		mov		eax,sum
 		call	WriteInt
 		call	crlf
+		mov		eax,average
+		call	WriteInt
+		
 
-	_testWriteVal:
-		push	sum
-		push	offset testBuffer
-		call	WriteVal
-		call	crlf
 	
-	mov		esi,offset ARRAY
-	mov		ecx,ARRAYSIZE
-	l3:
-		push	[esi]
-		push	offset	testBuffer
-		call	WriteVal
 
-		add		esi,4
-		LOOP l3
+	;mov		eax,average
+	;call	WriteInt
+	;call	crlf
+	;mov		eax,sum
+	;call	WriteInt
+	;call	crlf
 
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
@@ -231,6 +234,7 @@ ReadVal	 PROC
 	mov		ebp,esp
 	push	ecx
 	push	edi
+	push	eax
 
 	;				+20	       +16				+12			 +8
 	;			promptUser,offset BUFFER ,sizeof BUFFER,offset byteCount
@@ -291,10 +295,10 @@ ReadVal	 PROC
 
 	_allValidChars:
 		;prepare to loop over string once again
-		mov		esi,[ebp+16] 
+		mov		esi,[ebp+16] ;start of string in memory
 		mov		ecx,[ebp+8] 
 		mov		eax,0
-		;CLD
+		CLD
 		
 		;skip first char if it is +/-
 		cmp		edi,2 
@@ -336,7 +340,7 @@ ReadVal	 PROC
 
 	;ebx now contains the valid SDWORD for the input string
 	mov		ebx,eax
-
+	pop		eax
 	pop		edi
 	pop		ecx
 	pop		ebp
