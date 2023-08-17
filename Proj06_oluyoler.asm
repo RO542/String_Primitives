@@ -46,11 +46,12 @@ ARRAYSIZE  =  10
 
 
 
-testVal		= 217
+testVal		= -987498
 
 
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
+stringArray	SDWORD	ARRAYSIZE DUP (?)
 BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
 byteCount	SDWORD   ?
 
@@ -77,7 +78,7 @@ goodbye		BYTE "Thanks for using the program,bye now.",0
 
 .code
 main PROC
-
+	_intro:
 ;	mDisplayString offset intro1
 ;	call crlf
 ;	mDisplayString offset intro2
@@ -86,7 +87,6 @@ main PROC
 ;	call crlf
 	
 
-	JMP	_ender
 	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
 	mov		edi,offset ARRAY
@@ -100,40 +100,49 @@ main PROC
 		mov		[edi],ebx
 		add		edi,4
 		add		sum,ebx
-		LOOP fillArray
-
+		LOOP	fillArray
 	
+	xor		eax,eax
+	xor		edx,edx
+	mov		eax,sum
+	cdq		
+	mov		ebx,ARRAYSIZE
+	idiv	ebx
+	mov		average,eax
+
+	mDisplayString	offset	YouEntered
+	call	crlf
+	;read the values in ARRAY out as strings
 	mov		esi,offset ARRAY
 	mov		ecx,ARRAYSIZE
-	l2r2:
+	convertArray:
 		mov		eax,[esi]
-		call	WriteInt
-		call	crlf
-		add		esi,4
-		loop l2r2
-
-
-		mov		eax,sum
-		mov		edx,0
-		mov		ebx,ARRAYSIZE
-		mov		eax,sum
-		cdq
-		idiv	ebx
-		mov		average,eax
-
-		mov		eax,sum
-		call	WriteInt
-		call	crlf
-		mov		eax,average
-		call	WriteInt
-		
-		_ender:
-		push	testVal
+		push	eax
 		push	offset testBuffer
 		call	WriteVal
+		add		esi,4
+		loop	convertArray
+	call	crlf
 
 
 
+	mDisplayString	offset	showSum
+	call	crlf	
+	
+	push	sum
+	push	offset testBuffer
+	call	WriteVal
+	call	crlf
+
+	JMP		_testSection
+	
+	mDisplayString	offset	showAverage
+	push	average
+	push	offset	testBuffer
+	call	WriteVal
+
+
+	_testSection:
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
@@ -145,25 +154,31 @@ main ENDP
 WriteVal	PROC
 	push	ebp
 	mov		ebp,esp
+	
+
+	push	eax
+	push	ebx
+	push	edx
+	push	ecx
+	push	esi
+	push	edi
+
 	;clear  leftover in used registers just in case
 	xor		eax,eax
 	xor		ebx,ebx
 	xor		edx,edx
 	xor		ecx,ecx
 	
+	
+	;preparing for division/conversion to string
 	mov		ebx,10
 	mov		eax,[ebp+12]
 	mov		edi,[ebp+8]
-	
-	
 	cmp		eax,0
 	JNL		_getLen
-	;handle Negative
-
-	neg		eax
+	neg		eax 	;handle Negative
 
 	
-	mov		ebx,10
 	_getLen:
 		cmp		eax,0
 		JLE		_foundLen	
@@ -189,15 +204,21 @@ WriteVal	PROC
 		add		edx,48
 		mov		eax,edx
 		stosb
-		;call	WriteChar
 		LOOP	printL
+		mov		BYTE PTR [edi], 0 ; null termination
 	
-	mov		edx,offset testBuffer
-	call	WriteString
+	mDisplayString	[ebp+8]
+	mov		al," "
+	call	WriteChar
+	
 
 
-
-
+	pop		edi
+	pop		esi
+	pop		ecx
+	pop		edx
+	pop		ebx
+	pop		eax
 
 	pop		ebp
 	RET		8
