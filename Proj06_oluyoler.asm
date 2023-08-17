@@ -18,7 +18,7 @@ INCLUDE Irvine32.inc
 ;	NOTE: mDisplayString is used a subprocedure within main and mGetString
 ;
 ;
-; Preconditions: The address that is passed contains character bytes.
+; Preconditions: None
 ; Postconditions: None
 ;	
 ; Receives:
@@ -41,7 +41,7 @@ ENDM
 ; Prompts a user to enter a string and then stores the entered string in a memory
 ;	location.
 ;
-; Preconditions: 
+; Preconditions: The string is assumed to contain byte values.
 ; Postconditions: None
 ;	
 ; Receives:
@@ -72,10 +72,7 @@ mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
 ENDM
 
 ;Constants
-MAX_SDWORD =  +2147483647
-MIN_SDWORD =  -2147483648
 ARRAYSIZE  =  10
-
 
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
@@ -343,7 +340,7 @@ ReadVal	 PROC
 
 	_verifyLength:
 		mov		eax,[ebp+8]
-		cmp		eax,12
+		cmp		eax,11
 		JG		_subsequentPrompt
 
 		; preparing to loop over the string
@@ -437,6 +434,8 @@ ReadVal	 PROC
 
 	;ebx now contains the valid SDWORD for the input string
 	mov		ebx,eax
+
+	; return registers back to their original state
 	pop		eax
 	pop		edi
 	pop		ecx

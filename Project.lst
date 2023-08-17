@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:33:23
 .String Primitives/Macros     (Proj06_oluyoler		     Page 1 - 1
 
 
@@ -93,8 +93,6 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 				ENDM
 
 				;Constants
- = 7FFFFFFF			MAX_SDWORD =  +2147483647
- =-80000000			MIN_SDWORD =  -2147483648
  = 0000000A			ARRAYSIZE  =  10
 
 
@@ -524,7 +522,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 
  000001F5				_verifyLength:
  000001F5  8B 45 08				mov		eax,[ebp+8]
- 000001F8  83 F8 0C				cmp		eax,12
+ 000001F8  83 F8 0B				cmp		eax,11
  000001FB  7F DA				JG		_subsequentPrompt
 
 						; preparing to loop over the string
@@ -591,15 +589,16 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 						
 					
  00000258					convChars:
+							;shift char digit left using multiplication
  00000258  BB 0000000A					mov		ebx,10
  0000025D  33 D2					xor		edx,edx
- 0000025F  F7 EB					imul	ebx ;shift char digit left
+ 0000025F  F7 EB					imul	ebx
  00000261  0F 80 FFFFFF70				jo		_subsequentPrompt
-
+							
+							;turn character to integer 
  00000267  50						push	eax 
  00000268  33 C0					xor		eax,eax
  0000026A  AC						lodsb
-
  0000026B  83 E8 30					sub		eax,48; ASCII subtraction 
  0000026E  8B D8					mov		ebx,eax
  00000270  58						pop		eax
@@ -627,7 +626,7 @@ Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:10:24
+Microsoft (R) Macro Assembler Version 14.29.30151.0	    08/17/23 17:33:23
 .String Primitives/Macros     (Proj06_oluyoler		     Symbols 2 - 1
 
 
@@ -955,7 +954,6 @@ KEY_EVENT  . . . . . . . . . . .	Number	 00000001h
 KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
 LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
 LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
-MAX_SDWORD . . . . . . . . . . .	Number	 7FFFFFFFh   
 MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
 MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
 MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
@@ -981,7 +979,6 @@ MB_USERICON  . . . . . . . . . .	Number	 00000080h
 MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
 MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
 MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
-MIN_SDWORD . . . . . . . . . . .	Number	 -80000000h   
 MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
 MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
 NULL . . . . . . . . . . . . . .	Number	 00000000h   
