@@ -46,7 +46,7 @@ ARRAYSIZE  =  10
 
 
 
-testVal =	892433
+testVal		= -217
 
 
 .data
@@ -100,7 +100,6 @@ main PROC
 		mov		[edi],ebx
 		add		edi,4
 		add		sum,ebx
-
 		LOOP fillArray
 
 	
@@ -142,6 +141,7 @@ main ENDP
 
 
 
+
 WriteVal	PROC
 	push	ebp
 	mov		ebp,esp
@@ -149,50 +149,43 @@ WriteVal	PROC
 	xor		eax,eax
 	xor		ebx,ebx
 	xor		edx,edx
-	
-
-	;finding the number of digits
-	mov		eax,[ebp+12]
-	mov		ebx,10
 	xor		ecx,ecx
+	
+	mov		eax,[ebp+12]
+
+	
+	;check negative here and negate if neeeded
+	mov		ebx,10
+	neg		eax
+
 	_getLen:
 		cmp		eax,0
-		JE		_foundLen	
-		xor		edx,edx
+		JLE		_foundLen	
+	
 		idiv	ebx
-		mov		ebx,10
+		push	edx ; save remainder to stack
+		xor		edx,edx
 		inc		ecx
 		JMP		_getLen
 	_foundLen:	;ecx has the length
-	push		ecx
-
-
-	;load number and divide
-	mov		eax, [ebp+12];number itself
-	xor		edx,edx
-	mov		ebx,10
-	mov		edi, [ebp+8];offset testBuffer
-
-	l:
-		idiv	ebx
-		push	eax
-
+		
+	mov		edi,[ebp+8]
+	CLD
+	printL:
+		pop		edx
+		add		edx,48
 		mov		eax,edx
-		add		eax,48
 		stosb
-
-		xor		edx,edx
-		pop		eax
-		LOOP l
-
-	pop		ecx
-	mov		eax,ecx
-	call	WriteInt
-	call	crlf
-
+		;call	WriteChar
+		LOOP	printL
+	
 	mov		edx,offset testBuffer
 	call	WriteString
-	
+
+
+
+
+
 	pop		ebp
 	RET		8
 WriteVal	ENDP
