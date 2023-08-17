@@ -12,7 +12,21 @@ TITLE  String Primitives/Macros     (Proj06_oluyoler)
 INCLUDE Irvine32.inc
 
 ;Macros
-
+; ---------------------------------------------------------------------------------
+; Name: mDisplayString
+; Prints a string to the console using WriteString. 
+;	NOTE: mDisplayString is used a subprocedure within main and mGetString
+;
+;
+; Preconditions: The address that is passed contains character bytes.
+; Postconditions: None
+;	
+; Receives:
+; stringAddress = address of the string being printed
+; 
+;Returns:
+;	None but the converted string is printed to the console.
+; ---------------------------------------------------------------------------------
 mDisplayString	MACRO stringAddress
 	push	edx
 	mov		edx,stringAddress
@@ -22,8 +36,25 @@ mDisplayString	MACRO stringAddress
 ENDM
 
 
+; ---------------------------------------------------------------------------------
+; Name: mGetString
+; Prompts a user to enter a string and then stores the entered string in a memory
+;	location.
+;
+; Preconditions: 
+; Postconditions: None
+;	
+; Receives:
+; 	prompt = prompt displayed to user before reading their string
+;	bufferAddress = a character buffer used to display a string such as prompt
+;	bufferSize = the size of the buffer mentioned above
+; 
+;Returns:
+;	byteNum = an address with the number of bytes counted from the user's input	
+; ---------------------------------------------------------------------------------
 mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
 
+	;save registers that might be affected
 	push	edx
 	push	ecx
 	push	eax
@@ -33,7 +64,8 @@ mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
 	mov		ecx, bufferSize
 	call	ReadString
 	mov		[byteNum],eax ; sending back the number of bytes entered 
-
+	
+	;return saved registered to their prior state
 	pop eax
 	pop ecx
 	pop	edx
@@ -45,22 +77,13 @@ MIN_SDWORD =  -2147483648
 ARRAYSIZE  =  10
 
 
-
-testVal		= -987498
-
-
 .data
 ARRAY		SDWORD	ARRAYSIZE DUP (?)
-stringArray	SDWORD	ARRAYSIZE DUP (?)
 BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
 byteCount	SDWORD   ?
-
-
-testBuffer	BYTE	12	DUP(?)
-
-average		SDWORD ?
-sum			SDWORD 0
-subtotal	SDWORD ?
+charBuffer	BYTE	12	DUP(?)
+average		SDWORD	?
+sum			SDWORD	0
 
 
 intro1		BYTE "The following program takes in 10 user inputs as strings verifies they are valid and returns the rounded average and sum that is represented.",0
@@ -74,22 +97,24 @@ YouEntered	BYTE "Here are your 10 inputs",0
 showAverage	BYTE "The truncated average is:",0
 showSum		BYTE "The calculated sum is:",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
-
+minSDWORD	BYTE "-2147483648",0
 
 .code
 main PROC
-	_intro:
-;	mDisplayString offset intro1
-;	call crlf
-;	mDisplayString offset intro2
-;	call crlf
-;	mDisplayString offset intro3
-;	call crlf
+	;displaying an introduction and short explanation
+	mDisplayString offset intro1
+	call crlf
+	mDisplayString offset intro2
+	call crlf
+	mDisplayString offset intro3
+	call crlf
 	
 
 	;prepare to fill the array
 	mov		ecx,ARRAYSIZE
 	mov		edi,offset ARRAY
+
+
 	fillArray:
 		push	offset	rePrompt
 		push	offset	promptUser
@@ -97,11 +122,14 @@ main PROC
 		push	sizeof	BUFFER
 		push	offset	byteCount
 		call	ReadVal
+
+		;ebx now has the valid converted integer
 		mov		[edi],ebx
 		add		edi,4
 		add		sum,ebx
 		LOOP	fillArray
 	
+	;prepare and do signed division for average
 	xor		eax,eax
 	xor		edx,edx
 	mov		eax,sum
@@ -110,38 +138,65 @@ main PROC
 	idiv	ebx
 	mov		average,eax
 
+
+	;convert and print the user's integer inputs
 	mDisplayString	offset	YouEntered
 	call	crlf
-
 	mov		esi,offset ARRAY ; which stores the sdwords to be printed
 	mov		ecx,ARRAYSIZE ; number of elements
-	convertArray:
+	printInts:
 		push	[esi]
-		push	offset testBuffer
+		push	offset charBuffer
 		call	WriteVal
 		add		esi,4
-		LOOP	convertArray
+		LOOP	printInts
 
+
+	;print the sum calculated
+	call	crlf
 	call	crlf
 	mDisplayString offset showSum
 	push	sum
-	push	offset testBuffer
+	push	offset charBuffer
 	call	WriteVal
 	call	crlf
-
+	
+	
+	;print the average calculated
+	call	crlf
 	mDisplayString offset showAverage
 	push	average
-	push	offset testBuffer
+	push	offset charBuffer
 	call	WriteVal
+	call	crlf
+	call	crlf
+
+	;display goodbye message
+	mDisplayString offset goodbye
 
 
-	_testSection:
 		Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
 
 
-
+; ---------------------------------------------------------------------------------
+; Name:WriteVal 
+; WriteVal takes in an integer and converts it to a string that can be shown on 
+; the console.
+; 
+;	mDisplayString is used a subprocedure
+;
+; Preconditions: The integer entered must be an SDWORD.
+; Postconditions: The character buffer will contain the the last int as a string.
+;	
+; Receives:
+; [ebp+8]  = The integer being converted
+; [ebp+12] = pointer to character buffer used to display the converted number
+; 
+;Returns:
+;	None but the converted integer is printed to the console.
+; ---------------------------------------------------------------------------------
 
 WriteVal	PROC
 	push	ebp
@@ -163,7 +218,7 @@ WriteVal	PROC
 	xor		ecx,ecx
 	
 	;clear the character buffer 
-	mov edi, offset testBuffer
+	mov edi, [ebp+8]
 	mov ecx, 12
 	xor eax, eax
 	rep stosb
@@ -181,7 +236,6 @@ WriteVal	PROC
 	
 
 
-	
 	_getLen:
 		cmp		eax,0
 		JLE		_foundLen	
@@ -214,7 +268,7 @@ WriteVal	PROC
 		
 	_zeroEdgeCase:
 
-		mov		edi,offset testBuffer
+		mov		edi,[ebp+8]
 		mov		ebx,[edi]
 		add		ebx,48
 		mov		[edi],ebx
@@ -222,11 +276,10 @@ WriteVal	PROC
 
 
 
-	
 	_end:
-	mDisplayString	[ebp+8]
-	mov		al," "
-	call	WriteChar
+		mDisplayString	[ebp+8]
+		mov		al," "
+		call	WriteChar
 	
 
 	;restoring many registers
