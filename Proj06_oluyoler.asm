@@ -75,8 +75,8 @@ ENDM
 ARRAYSIZE  =  10
 
 .data
-ARRAY		SDWORD	ARRAYSIZE DUP (?)
-BUFFER		BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
+array		SDWORD	ARRAYSIZE DUP (?)
+readBuffer	BYTE	40	DUP(0) ;allow up to 40 chars, but anything above 11 is later rejected in ReadVal
 byteCount	SDWORD   ?
 charBuffer	BYTE	12	DUP(?)
 average		SDWORD	?
@@ -88,13 +88,14 @@ intro2		BYTE "The inputs must represent numbers [-2^31,2^31-1] to be valid. ",0
 intro3		BYTE "After collecting 10 numbers the sum,average, and numbers used to find them will be displayed.",0
 promptUser	BYTE "Enter in a signed number: ",0
 rePrompt	BYTE "Too big/small or non-number entered: ",0
-YouEntered	BYTE "Here are your 10 inputs",0
+youEntered	BYTE "Here are your 10 inputs",0
 showAverage	BYTE "The truncated average is: ",0
 showSum		BYTE "The calculated sum is: ",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
 
 .code
 main PROC
+
 	;displaying an introduction and short explanation
 	mDisplayString offset intro1
 	call crlf
@@ -104,16 +105,14 @@ main PROC
 	call crlf
 	
 
-	;prepare to fill the array
+	;prepare and fill the array of SDWORDs
 	mov		ecx,ARRAYSIZE
-	mov		edi,offset ARRAY
-
-
+	mov		edi,offset array
 	fillArray:
 		push	offset	rePrompt
 		push	offset	promptUser
-		push	offset	BUFFER
-		push	sizeof	BUFFER
+		push	offset	readBuffer
+		push	sizeof	readBuffer
 		push	offset	byteCount
 		call	ReadVal
 
@@ -132,11 +131,12 @@ main PROC
 	idiv	ebx
 	mov		average,eax
 
-
-	;convert and print the user's integer inputs
-	mDisplayString	offset	YouEntered
+	
 	call	crlf
-	mov		esi,offset ARRAY ; which stores the sdwords to be printed
+	;convert and print the user's integer inputs
+	mDisplayString	offset youEntered
+	call	crlf
+	mov		esi,offset array ; which stores the sdwords to be printed
 	mov		ecx,ARRAYSIZE ; number of elements
 	printInts:
 		push	offset minSDWORD
@@ -170,6 +170,8 @@ main PROC
 
 	;display goodbye message
 	mDisplayString offset goodbye
+	call	crlf
+	call	crlf
 
 
 		Invoke ExitProcess,0	; exit to operating system
@@ -243,11 +245,11 @@ WriteVal	PROC
 		JMP		_getLen
 
 	_foundLen:	; ecx contains the number of digits
-	mov		eax,[ebp+12]
-	cmp		eax,0
-	JNL		loadBuffer
-	push	 "-" -48
-	inc		ecx
+		mov		eax,[ebp+12]
+		cmp		eax,0
+		JNL		loadBuffer
+		push	 "-" -48
+		inc		ecx
 
 
 	CLD
@@ -267,7 +269,7 @@ WriteVal	PROC
 		mov		ebx,[edi]
 		add		ebx,48
 		mov		[edi],ebx
-		mov		 BYTE PTR [edi +1 ], 0 ; null termination
+		mov		 BYTE PTR [edi+1], 0 ; null termination
 		JMP		_end
 
 
@@ -287,6 +289,7 @@ WriteVal	PROC
 
 	_end:
 		mDisplayString	[ebp+8]
+		;space output for visibility 
 		mov		al," "
 		call	WriteChar
 	
