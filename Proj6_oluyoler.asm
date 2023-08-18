@@ -25,7 +25,7 @@ INCLUDE Irvine32.inc
 ; stringAddress = address of the string being printed
 ; 
 ;Returns:
-;	None but the converted string is printed to the console.
+;	Nothing but the converted string is printed to the console.
 ; ---------------------------------------------------------------------------------
 mDisplayString	MACRO stringAddress
 	push	edx
@@ -53,7 +53,6 @@ ENDM
 ;	byteNum = an address with the number of bytes counted from the user's input	
 ; ---------------------------------------------------------------------------------
 mGetString		MACRO prompt,bufferAddress,bufferSize,byteNum
-
 	;save registers that might be affected
 	push	edx
 	push	ecx
@@ -92,7 +91,7 @@ youEntered	BYTE "Here are your 10 inputs",0
 showAverage	BYTE "The truncated average is: ",0
 showSum		BYTE "The calculated sum is: ",0
 goodbye		BYTE "Thanks for using the program,bye now.",0
-
+space		BYTE " ",0
 .code
 main PROC
 
@@ -139,6 +138,7 @@ main PROC
 	mov		esi,offset array ; which stores the sdwords to be printed
 	mov		ecx,ARRAYSIZE ; number of elements
 	printInts:
+		push	offset space
 		push	offset minSDWORD
 		push	[esi]
 		push	offset charBuffer
@@ -151,6 +151,7 @@ main PROC
 	call	crlf
 	call	crlf
 	mDisplayString offset showSum
+	push	offset space
 	push	offset minSDWORD
 	push	sum
 	push	offset charBuffer
@@ -161,6 +162,7 @@ main PROC
 	;print the average calculated
 	call	crlf
 	mDisplayString offset showAverage
+	push	offset space
 	push	offset minSDWORD
 	push	average
 	push	offset charBuffer
@@ -190,12 +192,14 @@ main ENDP
 ; Postconditions: The character buffer will contain the the last int as a string.
 ;	
 ; Receives:
-; [ebp+8]  = The integer being converted
-; [ebp+12] = address character buffer used to display the converted number
-; [ebp+16] = address of a string representation of the smallest SDWORD
+; [ebp+8]  = character buffer for printing
+; [ebp+12] = number being printed
+; [ebp+16] = address of a string representation of the smallest SDWORD for edge case
+; [ebp+20] = address of space " ",0 used for spacing
+
 ; 
 ;Returns:
-;	None but the converted integer is printed to the console.
+;	Nothing but the converted integer is printed to the console.
 ; ---------------------------------------------------------------------------------
 
 WriteVal	PROC
@@ -288,10 +292,14 @@ WriteVal	PROC
 
 
 	_end:
-		mDisplayString	[ebp+8]
-		;space output for visibility 
-		mov		al," "
-		call	WriteChar
+		mDisplayString	[ebp+8]  ; char buffer
+		mDisplayString  [ebp+20] ; spacing
+	
+	;clear buffer once again
+	mov edi, [ebp+8]
+	mov ecx, 12
+	xor eax, eax
+	rep stosb
 	
 
 	;restoring many registers
@@ -303,7 +311,7 @@ WriteVal	PROC
 	pop		ecx
 
 	pop		ebp
-	RET		12
+	RET		16
 WriteVal	ENDP
 
 
@@ -329,7 +337,7 @@ WriteVal	ENDP
 ; ---------------------------------------------------------------------------------
 ReadVal	 PROC
 	push	ebp
-	mov		ebp,esp
+	mov		ebp,esp 
 	push	ecx
 	push	edi
 	push	eax
